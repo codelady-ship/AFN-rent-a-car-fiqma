@@ -1,0 +1,100 @@
+
+  @media (max-width: 978px) {
+    /* 978px ve daha küçük ekranlar için stiller */
+    .swiper-slide {
+        flex-direction: column; 
+        align-items: center; 
+    }
+    .swiper-slide img {
+        width: 80%; 
+        margin: 2rem 0; 
+    }
+    .info h1 {
+        font-size: 2.5rem; 
+    }
+    .info p {
+        font-size: 1.8rem; 
+    }
+    .info a {
+        width: 12rem;
+        font-size: 1.8rem;
+    }
+
+    .icare{
+        display: flex;
+       flex-wrap: wrap;
+       
+    }
+    .sliders {
+        width: 30%; /* 3 yana şekil ayarlansn */
+    }
+    .categoriya {
+        display: flex;
+        align-items: center;
+       flex-wrap: wrap;
+    }
+    .categoriya a{
+        width: 20rem;    
+    }
+    .etrafli {
+        width: 9rem;
+        padding: 0.3em 1.5rem;
+        font-size: 0.8rem;
+    }
+}
+    
+      
+  @media (max-width: 768px) {
+    /* 768px ve daha küçük ekranlar için stiller */
+    .header .links {
+        display: none; /* Linkleri gizle */
+      }
+.swiper-slide img {
+    width: 10rem; 
+    margin: 1rem 0; 
+}
+
+.info {
+    padding: 0.5rem; 
+}
+
+.info h1 {
+    font-size: 2rem; 
+}
+
+.info p {
+    font-size: 1.5rem; 
+}
+
+.info a {
+    width: 100%;
+    font-size: 1.5rem;
+    padding: 0.7rem; 
+}
+
+.icare{
+    display: flex;
+   flex-wrap: wrap;
+   
+}
+.sliders {
+    width: 60%;
+    margin: 0 5rem;
+}
+
+.page2{
+    display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   align-items: center;
+}
+.categoriya a{
+    width: 25rem;    
+}
+.etrafli {
+    width: 7rem;
+    padding: 0.2em 1rem;
+    font-size: 0.7rem;
+}
+
+}

@@ -1,0 +1,176 @@
+{ 
+     "swippers" :[
+    {
+    "names": "EKONOM Klass",
+    "description": "Avtomobil kirayəsi",
+    "price": "60 AZN/Gün",
+    "imageUrl": "./fotos/afntransport/2015_Ford_Fusion_Energi 1.png",
+    "rentalLink": "#"
+    },
+    {
+    "names": "BIZNES Klass",
+    "description": "Avtomobil kirayəsi",
+    "price": "150 AZN/Gün",
+    "imageUrl": "./fotos/afntransport/hundai elantra econom 1.png",
+    "rentalLink": "#"
+    },
+    {
+    "names": "PREMIUN Klass",
+    "description": "Avtomobil kirayəsi",
+    "price": "250 AZN/Gün",
+    "imageUrl": "./fotos/afntransport/toyota prado premium 1.png",
+    "rentalLink": "#"
+   },
+   {
+    "names": "KROSKOVER VƏ SUV",
+    "description": "Avtomobil kirayəsi",
+    "price": "350 AZN/Gün",
+    "imageUrl": "./fotos/afntransport/tucson crossover 1.png",
+    "rentalLink": "#"
+   }
+],
+
+    "categories": [
+    {
+      "id": 1,
+      "name": "Hamısı"
+    },
+    {
+      "id": 2,
+      "name": "Ekonom"
+    },
+    {
+      "id": 3,
+      "name": "Biznes"
+    },
+    {
+      "id": 4,
+      "name": "Premium"
+    },
+    {
+      "id": 5,
+      "name": "Crossover & SUVs"
+    }
+  ],
+    "cars": [
+        {
+            "id": "1",
+            "model": "Toyota Corolla",
+            "year": 2023,
+            "fuelType": "Benzin",
+            "transmission": "Avtomatik",
+            "seats": 5,
+            "pricePerDay": 50,
+            "available": true,
+            "image": "./fotos/kiraye/a8f1178356483286454e51f8228b7599.jpeg",
+            "categories": "Ekonom",
+            "color": "Ağ",
+            "brand": "Toyota",
+            "engine": "1.5L"
+          },
+          {
+            "id": "2",
+            "model": "BMW 320i",
+            "year": 2022,
+            "fuelType": "Benzin",
+            "transmission": "Avtomatik",
+            "seats": 5,
+            "pricePerDay": 100,
+            "available": true,
+            "image": "./fotos/kiraye/f99d4559a53730922f3ec52caf7557fa.jpeg",
+            "categories": "Ekonom",
+            "color": "Qara",
+            "brand": "BMW",
+            "engine": "2.0L"
+          },
+          {
+            "id": "3",
+            "model": "Mercedes-Benz E-Class",
+            "year": 2021,
+            "fuelType": "Benzin",
+            "transmission": "Avtomatik",
+            "seats": 5,
+            "pricePerDay": 150,
+            "available": false,
+            "image": "./fotos/kiraye/Rectangle 245.png",
+            "categories":"Biznes",
+            "color": "Gümüş",
+            "brand": "Mercedes-Benz",
+            "engine": "2.5L"
+          },
+          {
+            "id": "4",
+            "model": "Volkswagen Golf",
+            "year": 2020,
+            "fuelType": "Dizel",
+            "transmission": "Manuel",
+            "seats": 5,
+            "pricePerDay": 60,
+            "available": true,
+            "image": "./fotos/kiraye/Rectangle 245 (1).png",
+            "categories": "Premium",
+            "color": "Mavi",
+            "brand": "Volkswagen",
+            "engine": "1.6L"
+          },
+          {
+            "id": "5",
+            "model": "Audi A3",
+            "year": 2023,
+            "fuelType": "Benzin",
+            "transmission": "Avtomatik",
+            "seats": 5,
+            "pricePerDay": 120,
+            "available": true,
+            "image": "./fotos/afntransport/2015_Ford_Fusion_Energi 1.png",
+            "categories":"Biznes",
+            "color": "Qırmızı",
+            "brand": "Audi",
+            "engine": "1.8L"
+          },
+          {
+            "id": "6",
+            "model": "Honda Civic",
+            "year": 2022,
+            "fuelType": "Hibrid",
+            "transmission": "Avtomatik",
+            "seats": 5,
+            "pricePerDay": 80,
+            "available": true,
+            "image": "./fotos/afntransport/hundai elantra econom 1.png",
+            "categories":"Premium",
+            "color": "Beyaz",
+            "brand": "Honda",
+            "engine": "1.5L"
+          },
+          {
+            "id": "7",
+            "model": "Nissan Qashqai",
+            "year": 2021,
+            "fuelType": "Dizel",
+            "transmission": "Avtomatik",
+            "seats": 5,
+            "pricePerDay": 95,
+            "available": true,
+            "image": "./fotos/afntransport/toyota prado premium 1.png",
+            "categories":"Crossover & SUVs",
+            "color": "Qara",
+            "brand": "Nissan",
+            "engine": "2.0L"
+          },
+          {
+            "id": "8",
+            "model": "Jeep Wrangler",
+            "year": 2023,
+            "fuelType": "Benzin",
+            "transmission": "Manuel",
+            "seats": 4,
+            "pricePerDay": 140,
+            "available": false,
+            "image": "./fotos/afntransport/tucson crossover 1.png",
+            "categories": "Crossover & SUVs",
+            "color": "Yaşıl",
+            "brand": "Jeep",
+            "engine": "3.6L"}
+    ]
+  } 
