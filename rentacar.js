@@ -4,11 +4,23 @@ const carsContainer = document.querySelector(".cars");
 const categoriyaContainer = document.querySelector(".categoriya");
 
 const endpoint = "http://localhost:3000/";
+
+// Lokalda json-server (localhost:3000) işləyirsə ondan oxuyuruq.
+// GitHub Pages-də və ya server işləmirsə eyni datanı backend/rentAcar.json faylından götürürük.
+const tryLocalApi = ["localhost", "127.0.0.1"].includes(location.hostname) || location.protocol === "file:";
+let staticDb;
+const loadStaticDb = () => {
+  if (!staticDb) staticDb = axios.get("./backend/rentAcar.json").then((res) => res.data);
+  return staticDb;
+};
+const getData = (key) =>
+  (tryLocalApi ? axios.get(endpoint + key) : Promise.reject(new Error("no local API")))
+    .catch(() => loadStaticDb().then((db) => ({ status: 200, statusText: "OK", data: db[key] })));
 //---------------------------------------------------------------------------------
 // Swiper instansiyasını bir dəfə yaratmaq
 let swiperInstance;
 // Swiper üçün API ilə əlaqə qururuq
-axios.get(endpoint + "swippers")
+getData("swippers")
   .then((res) => {
     if (res.status === 200) {
       showSwipper(res.data); // Serverdən gələn məlumatı göstərmək
@@ -69,7 +81,7 @@ const showSwipper = (a) => {
 };
 
 // `cars` verilənlərini serverdən çəkirik
-axios.get(endpoint + "cars")
+getData("cars")
   .then((res) => {
     if (res.status === 200 && res.statusText === "OK") {
       showCars(res.data); // cars arrayini ekrana göstərmək
@@ -137,7 +149,7 @@ const showCars = (arr) => {
 };
 
 // `categories` verilənlərini serverdən çəkirik
-axios.get(endpoint + "categories")
+getData("categories")
   .then((res) => {
     if (res.status === 200 && res.statusText === "OK") {
       showCategoriya(res.data); // categories arrayini ekrana göstərmək
@@ -156,7 +168,7 @@ const showCategoriya = (arr) => {
 // Funksiya: Kateqoriya seçildikdə, maşınları filtr etmək
 function filterByCategory(filter) {
   // API-dən `cars` məlumatını çəkirik
-  axios.get(endpoint + "cars")  
+  getData("cars")
     .then((res) => {
       let filteredCars;  
       if (filter === "Hamısı") {
