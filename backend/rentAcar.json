@@ -1,36 +1,39 @@
-{ 
-     "swippers" :[
+{
+  "slides": [
     {
-    "names": "EKONOM Klass",
-    "description": "Avtomobil kirayəsi",
-    "price": "60 AZN/Gün",
-    "imageUrl": "./fotos/afntransport/2015_Ford_Fusion_Energi 1.png",
-    "rentalLink": "#"
+      "id": 1,
+      "title": "EKONOM klass",
+      "subtitle": "Avtomobil kirayəsi",
+      "price": "40 AZN/gündən",
+      "image": "./fotos/cars/hyundai-elantra.webp",
+      "category": "Ekonom"
     },
     {
-    "names": "BIZNES Klass",
-    "description": "Avtomobil kirayəsi",
-    "price": "150 AZN/Gün",
-    "imageUrl": "./fotos/afntransport/hundai elantra econom 1.png",
-    "rentalLink": "#"
+      "id": 2,
+      "title": "BİZNES klass",
+      "subtitle": "Avtomobil kirayəsi",
+      "price": "70 AZN/gündən",
+      "image": "./fotos/cars/ford-fusion.webp",
+      "category": "Biznes"
     },
     {
-    "names": "PREMIUN Klass",
-    "description": "Avtomobil kirayəsi",
-    "price": "250 AZN/Gün",
-    "imageUrl": "./fotos/afntransport/toyota prado premium 1.png",
-    "rentalLink": "#"
-   },
-   {
-    "names": "KROSKOVER VƏ SUV",
-    "description": "Avtomobil kirayəsi",
-    "price": "350 AZN/Gün",
-    "imageUrl": "./fotos/afntransport/tucson crossover 1.png",
-    "rentalLink": "#"
-   }
-],
-
-    "categories": [
+      "id": 3,
+      "title": "PREMIUM klass",
+      "subtitle": "Avtomobil kirayəsi",
+      "price": "200 AZN/gündən",
+      "image": "./fotos/cars/toyota-prado.webp",
+      "category": "Premium"
+    },
+    {
+      "id": 4,
+      "title": "KROSSOVER VƏ SUV",
+      "subtitle": "Avtomobil kirayəsi",
+      "price": "70 AZN/gündən",
+      "image": "./fotos/cars/hyundai-tucson.webp",
+      "category": "Krossover və SUV"
+    }
+  ],
+  "categories": [
     {
       "id": 1,
       "name": "Hamısı"
@@ -49,128 +52,208 @@
     },
     {
       "id": 5,
-      "name": "Crossover & SUVs"
+      "name": "Krossover və SUV"
+    },
+    {
+      "id": 6,
+      "name": "Avtobuslar"
     }
   ],
-    "cars": [
-        {
-            "id": "1",
-            "model": "Toyota Corolla",
-            "year": 2023,
-            "fuelType": "Benzin",
-            "transmission": "Avtomatik",
-            "seats": 5,
-            "pricePerDay": 50,
-            "available": true,
-            "image": "./fotos/kiraye/a8f1178356483286454e51f8228b7599.jpeg",
-            "categories": "Ekonom",
-            "color": "Ağ",
-            "brand": "Toyota",
-            "engine": "1.5L"
-          },
-          {
-            "id": "2",
-            "model": "BMW 320i",
-            "year": 2022,
-            "fuelType": "Benzin",
-            "transmission": "Avtomatik",
-            "seats": 5,
-            "pricePerDay": 100,
-            "available": true,
-            "image": "./fotos/kiraye/f99d4559a53730922f3ec52caf7557fa.jpeg",
-            "categories": "Ekonom",
-            "color": "Qara",
-            "brand": "BMW",
-            "engine": "2.0L"
-          },
-          {
-            "id": "3",
-            "model": "Mercedes-Benz E-Class",
-            "year": 2021,
-            "fuelType": "Benzin",
-            "transmission": "Avtomatik",
-            "seats": 5,
-            "pricePerDay": 150,
-            "available": false,
-            "image": "./fotos/kiraye/Rectangle 245.png",
-            "categories":"Biznes",
-            "color": "Gümüş",
-            "brand": "Mercedes-Benz",
-            "engine": "2.5L"
-          },
-          {
-            "id": "4",
-            "model": "Volkswagen Golf",
-            "year": 2020,
-            "fuelType": "Dizel",
-            "transmission": "Manuel",
-            "seats": 5,
-            "pricePerDay": 60,
-            "available": true,
-            "image": "./fotos/kiraye/Rectangle 245 (1).png",
-            "categories": "Premium",
-            "color": "Mavi",
-            "brand": "Volkswagen",
-            "engine": "1.6L"
-          },
-          {
-            "id": "5",
-            "model": "Audi A3",
-            "year": 2023,
-            "fuelType": "Benzin",
-            "transmission": "Avtomatik",
-            "seats": 5,
-            "pricePerDay": 120,
-            "available": true,
-            "image": "./fotos/afntransport/2015_Ford_Fusion_Energi 1.png",
-            "categories":"Biznes",
-            "color": "Qırmızı",
-            "brand": "Audi",
-            "engine": "1.8L"
-          },
-          {
-            "id": "6",
-            "model": "Honda Civic",
-            "year": 2022,
-            "fuelType": "Hibrid",
-            "transmission": "Avtomatik",
-            "seats": 5,
-            "pricePerDay": 80,
-            "available": true,
-            "image": "./fotos/afntransport/hundai elantra econom 1.png",
-            "categories":"Premium",
-            "color": "Beyaz",
-            "brand": "Honda",
-            "engine": "1.5L"
-          },
-          {
-            "id": "7",
-            "model": "Nissan Qashqai",
-            "year": 2021,
-            "fuelType": "Dizel",
-            "transmission": "Avtomatik",
-            "seats": 5,
-            "pricePerDay": 95,
-            "available": true,
-            "image": "./fotos/afntransport/toyota prado premium 1.png",
-            "categories":"Crossover & SUVs",
-            "color": "Qara",
-            "brand": "Nissan",
-            "engine": "2.0L"
-          },
-          {
-            "id": "8",
-            "model": "Jeep Wrangler",
-            "year": 2023,
-            "fuelType": "Benzin",
-            "transmission": "Manuel",
-            "seats": 4,
-            "pricePerDay": 140,
-            "available": false,
-            "image": "./fotos/afntransport/tucson crossover 1.png",
-            "categories": "Crossover & SUVs",
-            "color": "Yaşıl",
-            "brand": "Jeep",
-            "engine": "3.6L"}
-    ]
-  } 
+  "cars": [
+    {
+      "id": "1",
+      "model": "Hyundai Accent",
+      "year": 2020,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 40,
+      "available": true,
+      "image": "./fotos/cars/hyundai-accent.webp",
+      "category": "Ekonom",
+      "color": "Qara",
+      "brand": "Hyundai",
+      "engine": "1.6"
+    },
+    {
+      "id": "2",
+      "model": "Hyundai Elantra",
+      "year": 2017,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 45,
+      "available": true,
+      "image": "./fotos/cars/hyundai-elantra.webp",
+      "category": "Ekonom",
+      "color": "Gümüşü",
+      "brand": "Hyundai",
+      "engine": "1.6"
+    },
+    {
+      "id": "3",
+      "model": "Ford Focus",
+      "year": 2019,
+      "fuelType": "Benzin",
+      "transmission": "Mexaniki",
+      "seats": 5,
+      "pricePerDay": 45,
+      "available": true,
+      "image": "./fotos/cars/ford-focus.webp",
+      "category": "Ekonom",
+      "color": "Boz",
+      "brand": "Ford",
+      "engine": "1.5"
+    },
+    {
+      "id": "4",
+      "model": "Toyota Camry",
+      "year": 2022,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 90,
+      "available": true,
+      "image": "./fotos/cars/toyota-camry.webp",
+      "category": "Biznes",
+      "color": "Ağ",
+      "brand": "Toyota",
+      "engine": "2.5"
+    },
+    {
+      "id": "5",
+      "model": "Ford Fusion Energi",
+      "year": 2015,
+      "fuelType": "Hibrid",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 70,
+      "available": true,
+      "image": "./fotos/cars/ford-fusion.webp",
+      "category": "Biznes",
+      "color": "Bej",
+      "brand": "Ford",
+      "engine": "2.0"
+    },
+    {
+      "id": "6",
+      "model": "Toyota Land Cruiser Prado",
+      "year": 2020,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 7,
+      "pricePerDay": 200,
+      "available": true,
+      "image": "./fotos/cars/toyota-prado.webp",
+      "category": "Premium",
+      "color": "Ağ",
+      "brand": "Toyota",
+      "engine": "4.0"
+    },
+    {
+      "id": "7",
+      "model": "Range Rover Vogue",
+      "year": 2021,
+      "fuelType": "Dizel",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 300,
+      "available": false,
+      "image": "./fotos/cars/range-rover.webp",
+      "category": "Premium",
+      "color": "Qara",
+      "brand": "Land Rover",
+      "engine": "3.0"
+    },
+    {
+      "id": "8",
+      "model": "Mercedes-AMG GT",
+      "year": 2021,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 2,
+      "pricePerDay": 350,
+      "available": true,
+      "image": "./fotos/cars/mercedes-amg-gt.webp",
+      "category": "Premium",
+      "color": "Sarı",
+      "brand": "Mercedes-Benz",
+      "engine": "4.0"
+    },
+    {
+      "id": "9",
+      "model": "Hyundai Tucson",
+      "year": 2021,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 80,
+      "available": true,
+      "image": "./fotos/cars/hyundai-tucson.webp",
+      "category": "Krossover və SUV",
+      "color": "Boz",
+      "brand": "Hyundai",
+      "engine": "2.0"
+    },
+    {
+      "id": "10",
+      "model": "Hyundai Creta",
+      "year": 2022,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 70,
+      "available": true,
+      "image": "./fotos/cars/hyundai-creta.webp",
+      "category": "Krossover və SUV",
+      "color": "Ağ",
+      "brand": "Hyundai",
+      "engine": "1.6"
+    },
+    {
+      "id": "11",
+      "model": "Hyundai Santa Fe",
+      "year": 2022,
+      "fuelType": "Dizel",
+      "transmission": "Avtomatik",
+      "seats": 7,
+      "pricePerDay": 120,
+      "available": true,
+      "image": "./fotos/cars/hyundai-santa-fe.webp",
+      "category": "Krossover və SUV",
+      "color": "Qara",
+      "brand": "Hyundai",
+      "engine": "2.2"
+    },
+    {
+      "id": "12",
+      "model": "Toyota Tacoma",
+      "year": 2022,
+      "fuelType": "Benzin",
+      "transmission": "Avtomatik",
+      "seats": 5,
+      "pricePerDay": 150,
+      "available": false,
+      "image": "./fotos/cars/toyota-tacoma.webp",
+      "category": "Krossover və SUV",
+      "color": "Boz",
+      "brand": "Toyota",
+      "engine": "3.5"
+    },
+    {
+      "id": "13",
+      "model": "Turist avtobusu",
+      "year": 2019,
+      "fuelType": "Dizel",
+      "transmission": "Mexaniki",
+      "seats": 50,
+      "pricePerDay": 400,
+      "available": true,
+      "image": "./fotos/cars/avtobus.webp",
+      "category": "Avtobuslar",
+      "color": "Ağ",
+      "brand": "AFN",
+      "engine": "12.0"
+    }
+  ]
+}

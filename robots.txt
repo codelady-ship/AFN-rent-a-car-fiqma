@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://codelady-ship.github.io/AFN-rent-a-car-fiqma/sitemap.xml

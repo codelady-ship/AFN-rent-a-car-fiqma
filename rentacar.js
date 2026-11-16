@@ -1,187 +1,252 @@
-// containerləri tuturuq
-const swiperContainer = document.querySelector(".swiper-container");
-const carsContainer = document.querySelector(".cars");
-const categoriyaContainer = document.querySelector(".categoriya");
+// AFN rent a car – page logic
+// Data source: by default the static file backend/rentAcar.json (works on GitHub Pages).
+// To use the json-server REST API instead, run it (see README) and open the page with
+// ?api=http://localhost:3000  — e.g. index.html?api=http://localhost:3000
+const API_URL = new URLSearchParams(location.search).get("api");
+const INITIAL_CARDS = 6;
 
-const endpoint = "http://localhost:3000/";
-
-// Lokalda json-server (localhost:3000) işləyirsə ondan oxuyuruq.
-// GitHub Pages-də və ya server işləmirsə eyni datanı backend/rentAcar.json faylından götürürük.
-const tryLocalApi = ["localhost", "127.0.0.1"].includes(location.hostname) || location.protocol === "file:";
 let staticDb;
 const loadStaticDb = () => {
   if (!staticDb) staticDb = axios.get("./backend/rentAcar.json").then((res) => res.data);
   return staticDb;
 };
 const getData = (key) =>
-  (tryLocalApi ? axios.get(endpoint + key) : Promise.reject(new Error("no local API")))
-    .catch(() => loadStaticDb().then((db) => ({ status: 200, statusText: "OK", data: db[key] })));
-//---------------------------------------------------------------------------------
-// Swiper instansiyasını bir dəfə yaratmaq
-let swiperInstance;
-// Swiper üçün API ilə əlaqə qururuq
-getData("swippers")
-  .then((res) => {
-    if (res.status === 200) {
-      showSwipper(res.data); // Serverdən gələn məlumatı göstərmək
-      // Swiper-in başlanğıcını göstərmək
-      if (!swiperInstance) {
-        // Burada "swipper" əvəzinə "Swiper" istifadə edilir
-        swiperInstance = new Swiper('.swiper-container', {
-          loop: true,
-          slidesPerView: 1, // Hər slaydda 1 görünəcək
-          spaceBetween: 5, // Slaytlar arasında məsafə
-          navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-          },
-          pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-          },
-          autoplay: {
-            delay: 3000, // 3 saniyədən bir avtomatik dəyişir
-          },
-          breakpoints: {
-            768: {
-              slidesPerView: 1,
-            },
-            978: {
-              slidesPerView: 1,
-            },
-          },
-        });
-      }
-    }
-  })
-  
+  (API_URL ? axios.get(`${API_URL.replace(/\/$/, "")}/${key}`).then((res) => res.data) : Promise.reject(new Error("static")))
+    .catch(() => loadStaticDb().then((db) => db[key]));
 
-// Swipper göstərmək funksiyası
-const showSwipper = (a) => {
-  swiperContainer.innerHTML = "";
-  // Yalnızca bir dəfə swiper-wrapper əlavə edirik
-  const swiperWrapper = document.createElement("div");
-  swiperWrapper.classList.add("swiper-wrapper");
-  a.forEach(({ imageUrl, names, description, price }) => {
-    const slide = document.createElement("div");
-    slide.classList.add("swiper-slide");
-    slide.innerHTML = `
-      <img src="${imageUrl}" alt="car">
-      <div class="info">
-        <h1>${names}</h1>
-        <h2>${description}</h2>
-        <p>${price}</p>
-        <a href="#">İndi icarə et</a>
-      </div>
-    `;
-    swiperWrapper.appendChild(slide);
-  });
-
-  swiperContainer.appendChild(swiperWrapper);
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
 };
 
-// `cars` verilənlərini serverdən çəkirik
-getData("cars")
-  .then((res) => {
-    if (res.status === 200 && res.statusText === "OK") {
-      showCars(res.data); // cars arrayini ekrana göstərmək
-    }
-  })
-  
+const state = { cars: [], category: "Hamısı", showAll: false };
 
-// Avtomobilləri göstərmək funksiyası
-const showCars = (arr) => {
-  carsContainer.innerHTML = "";
-  // Grid sistemi ilə avtomobilləri düzgün yerləşdiririk
-  arr.forEach(({ model, categories, pricePerDay, engine, image, brand, year, transmission }) => {
-    carsContainer.innerHTML += `
-      <div class="car-item">
-        <div class="rounded overflow-hidden shadow-lg">
-          <div class="relative">
-            <a href="#">
-              <img class="w-full" src="${image}" alt="car for rent">
-              <div class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25"></div>
-            </a>
-            <a href="#!">
-              <div class="text-xs absolute top-0 right-0 bg-orange-600 px-4 py-2 text-white mt-3 mr-3 border-2 border-orange-600 hover:bg-white hover:text-orange-600 transition duration-500 ease-in-out">
-                ${categories}
-              </div>
-            </a>
-          </div>
-
-          <div class="px-6 py-4 mb-auto">
-            <a href="#" class="font-bold text-2xl inline-block hover:text-indigo-600 transition duration-500 ease-in-out inline-block mb-2 text-black">${model}</a>
-            <p class="font-bold text-black text-sm">${year} ci il</p>
-            <p class="text-orange-600 text-xl font-bold">${pricePerDay} AZN/gün</p>
-          </div>
-
-          <div class="px-6 py-3 flex flex-row items-center justify-between bg-gray-100 border-t border-gray-400">
-            <div class="flex items-center">
-              <svg class="w-4 h-4 text-gray-500 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-              </svg>
-              <span class="ml-1 text-gray-500">${engine}L</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-4 h-4 text-gray-500 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              </svg>
-              <span class="ml-1 text-gray-500">${brand}</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-4 h-4 text-gray-500 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v20"></path>
-                <path d="M5 7l7 7 7-7"></path>
-              </svg>
-              <span class="ml-1 text-gray-500">${transmission}</span>
-            </div>
-          </div>
-
-          <!-- Buton -->
-          <div class="px-6 py-3">
-            <a href="#!" class="inline-block px-6 py-2 bg-white text-orange-600 font-medium text-center rounded-full border-2 border-orange-600 hover:bg-orange-600 hover:text-white transition duration-300 ease-in-out">
-              Ətraflı
-            </a>
-          </div>
-        </div>
-      </div>`;
-  });
+/* ---------- Mobile menu ---------- */
+const navToggle = $(".nav-toggle");
+const nav = $("#site-nav");
+const setNav = (open) => {
+  nav.classList.toggle("open", open);
+  navToggle.setAttribute("aria-expanded", String(open));
+  navToggle.setAttribute("aria-label", open ? "Menyunu bağla" : "Menyunu aç");
 };
+navToggle.addEventListener("click", () => setNav(!nav.classList.contains("open")));
+$$("a", nav).forEach((a) => a.addEventListener("click", () => setNav(false)));
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && nav.classList.contains("open")) { setNav(false); navToggle.focus(); } });
 
-// `categories` verilənlərini serverdən çəkirik
-getData("categories")
-  .then((res) => {
-    if (res.status === 200 && res.statusText === "OK") {
-      showCategoriya(res.data); // categories arrayini ekrana göstərmək
-    }
-  })
-  
-// Kateqoriyanı göstərmək funksiyası
-const showCategoriya = (arr) => {
-  categoriyaContainer.innerHTML = "";
-  arr.forEach((c) => {
-    // `onclick` hadisəsi ilə kateqoriya seçimini edirik
-    categoriyaContainer.innerHTML += `<p onclick="filterByCategory('${c.name}')"> ${c.name}</p>`;
+/* ---------- Hero slider ---------- */
+getData("slides").then((slides) => {
+  const wrapper = $("#hero-slides");
+  slides.forEach((s) => {
+    const slide = el("div", "swiper-slide");
+    const img = el("img");
+    img.src = s.image;
+    img.alt = s.title;
+    img.width = 800;
+    img.height = 500;
+    const info = el("div", "slide-info");
+    info.append(el("p", "slide-title", s.title), el("p", "slide-sub", s.subtitle), el("p", "slide-price", s.price));
+    const btn = el("button", "btn btn-solid", "İndi icarə et");
+    btn.type = "button";
+    btn.addEventListener("click", () => selectCategory(s.category, true));
+    info.append(btn);
+    slide.append(info, img);
+    wrapper.append(slide);
   });
-};
+  new Swiper(".hero-swiper", {
+    loop: true,
+    autoplay: { delay: 5000, disableOnInteraction: true },
+    pagination: { el: ".swiper-pagination", clickable: true },
+    navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+    a11y: { prevSlideMessage: "Əvvəlki slayd", nextSlideMessage: "Növbəti slayd" },
+  });
+});
 
-// Funksiya: Kateqoriya seçildikdə, maşınları filtr etmək
-function filterByCategory(filter) {
-  // API-dən `cars` məlumatını çəkirik
-  getData("cars")
-    .then((res) => {
-      let filteredCars;  
-      if (filter === "Hamısı") {
-        // "Hamısı" seçildikdə, bütün avtomobilləri göstəririk
-        filteredCars = res.data; 
-      } else {
-        // Seçilmiş kateqoriya uzre filtr edirik
-        filteredCars = res.data.filter((car) => {
-          return car.categories.includes(filter); // `filter`-in car.categories-də olub olmadığını yoxlayırıq
-        });
-      }
-      
-      showCars(filteredCars);
-    })
-    
+/* ---------- Cars, filters, show all ---------- */
+const carsList = $("#cars");
+const statusEl = $("#cars-status");
+const showAllBtn = $("#show-all");
+const filtersEl = $("#filters");
+
+function renderFilters(categories) {
+  filtersEl.innerHTML = "";
+  categories.forEach(({ name }) => {
+    const b = el("button", "filter", name);
+    b.type = "button";
+    b.dataset.category = name;
+    b.setAttribute("aria-pressed", String(name === state.category));
+    b.addEventListener("click", () => selectCategory(name));
+    filtersEl.append(b);
+  });
 }
+
+function selectCategory(name, scroll) {
+  state.category = name;
+  state.showAll = false;
+  $$(".filter", filtersEl).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.category === name)));
+  renderCars();
+  if (scroll) $("#avtomobiller").scrollIntoView({ behavior: "smooth" });
+}
+
+function carCard(car) {
+  const li = el("li", "car-card");
+  const media = el("div", "car-media");
+  const img = el("img");
+  img.src = car.image;
+  img.alt = `${car.model}, ${car.year}`;
+  img.loading = "lazy";
+  img.width = 800;
+  img.height = 500;
+  media.append(img, el("span", "badge", car.category));
+  if (!car.available) media.append(el("span", "badge busy", "Hazırda icarədədir"));
+  const body = el("div", "car-body");
+  body.append(el("h3", "", car.model), el("p", "car-year", `Buraxılış ili: ${car.year}`), el("p", "car-price", `${car.pricePerDay} AZN/gün`));
+  const specs = el("ul", "car-specs");
+  [`${car.engine} L`, car.transmission, car.fuelType, `${car.seats} yer`].forEach((t) => specs.append(el("li", "", t)));
+  const btn = el("button", "btn btn-ghost", "Ətraflı");
+  btn.type = "button";
+  btn.setAttribute("aria-label", `${car.model} – ətraflı`);
+  btn.addEventListener("click", () => openCar(car));
+  li.append(media, body, specs, btn);
+  return li;
+}
+
+function renderCars() {
+  const list = state.category === "Hamısı" ? state.cars : state.cars.filter((c) => c.category === state.category);
+  const visible = state.showAll ? list : list.slice(0, INITIAL_CARDS);
+  carsList.innerHTML = "";
+  visible.forEach((c) => carsList.append(carCard(c)));
+  statusEl.textContent = list.length ? `${list.length} avtomobil tapıldı${state.category !== "Hamısı" ? ` (${state.category})` : ""}.` : "Bu kateqoriyada avtomobil yoxdur.";
+  showAllBtn.hidden = list.length <= INITIAL_CARDS;
+  showAllBtn.textContent = state.showAll ? "Daha az göstər" : `Hamısını göstər (${list.length})`;
+  showAllBtn.setAttribute("aria-expanded", String(state.showAll));
+}
+
+showAllBtn.addEventListener("click", () => {
+  state.showAll = !state.showAll;
+  renderCars();
+  if (!state.showAll) $("#avtomobiller").scrollIntoView({ behavior: "smooth" });
+});
+
+$$(".class-tile").forEach((t) => t.addEventListener("click", () => selectCategory(t.dataset.category, true)));
+
+Promise.all([getData("categories"), getData("cars")])
+  .then(([categories, cars]) => {
+    state.cars = cars;
+    renderFilters(categories);
+    renderCars();
+    fillCarSelect(cars);
+  })
+  .catch(() => { statusEl.textContent = "Avtomobil siyahısı yüklənmədi. Səhifəni yeniləyin."; });
+
+/* ---------- Car detail modal ---------- */
+const carModal = $("#car-modal");
+let modalCar = null;
+
+function openCar(car) {
+  modalCar = car;
+  $("#modal-img").src = car.image;
+  $("#modal-img").alt = `${car.model}, ${car.year}`;
+  $("#modal-cat").textContent = car.category;
+  $("#modal-title").textContent = car.model;
+  $("#modal-price").textContent = `${car.pricePerDay} AZN/gün`;
+  const specs = $("#modal-specs");
+  specs.innerHTML = "";
+  [["Marka", car.brand], ["Buraxılış ili", car.year], ["Mühərrik", `${car.engine} L`], ["Sürətlər qutusu", car.transmission],
+   ["Yanacaq", car.fuelType], ["Yer sayı", car.seats], ["Rəng", car.color], ["Status", car.available ? "Boşdur" : "Hazırda icarədədir"]]
+    .forEach(([k, v]) => { specs.append(el("dt", "", k), el("dd", "", String(v))); });
+  carModal.showModal();
+}
+
+$("#modal-book").addEventListener("click", () => {
+  carModal.close();
+  if (modalCar) $("#r-car").value = modalCar.id;
+  updateEstimate();
+  $("#rezervasiya").scrollIntoView({ behavior: "smooth" });
+  setTimeout(() => $("#r-name").focus({ preventScroll: true }), 400);
+});
+
+$$("dialog").forEach((d) => {
+  $$(".modal-close, [data-close]", d).forEach((b) => b.addEventListener("click", () => d.close()));
+  d.addEventListener("click", (e) => { if (e.target === d) d.close(); });
+});
+
+/* ---------- Reservation form ---------- */
+const form = $("#res-form");
+const carSelect = $("#r-car");
+const fromInput = $("#r-from");
+const toInput = $("#r-to");
+const todayISO = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
+fromInput.min = todayISO();
+toInput.min = todayISO();
+
+function fillCarSelect(cars) {
+  cars.forEach((c) => {
+    const o = el("option", "", `${c.model} – ${c.pricePerDay} AZN/gün${c.available ? "" : " (hazırda icarədədir)"}`);
+    o.value = c.id;
+    o.disabled = !c.available;
+    carSelect.append(o);
+  });
+}
+
+const days = () => {
+  if (!fromInput.value || !toInput.value) return 0;
+  return Math.round((new Date(toInput.value) - new Date(fromInput.value)) / 86400000);
+};
+
+function updateEstimate() {
+  const car = state.cars.find((c) => c.id === carSelect.value);
+  const d = days();
+  $("#estimate").textContent = car && d > 0 ? `Təxmini məbləğ: ${d} gün × ${car.pricePerDay} AZN = ${d * car.pricePerDay} AZN` : "";
+}
+[carSelect, fromInput, toInput].forEach((i) => i.addEventListener("change", updateEstimate));
+fromInput.addEventListener("change", () => { toInput.min = fromInput.value || todayISO(); });
+
+function setError(input, msg) {
+  $(`#${input.id}-err`).textContent = msg;
+  input.setAttribute("aria-invalid", msg ? "true" : "false");
+  if (msg) input.setAttribute("aria-describedby", `${input.id}-err`);
+}
+
+function validate() {
+  const checks = [
+    [$("#r-name"), (v) => (v.trim().length >= 3 ? "" : "Ad və soyadı yazın (ən azı 3 hərf).")],
+    [$("#r-phone"), (v) => (/^[+]?[0-9 ()-]{9,}$/.test(v.trim()) ? "" : "Telefon nömrəsini düzgün yazın, məsələn +994 50 000 00 00.")],
+    [carSelect, (v) => (v ? "" : "Avtomobil seçin.")],
+    [fromInput, (v) => (!v ? "Götürmə tarixini seçin." : v < todayISO() ? "Keçmiş tarix seçmək olmaz." : "")],
+    [toInput, (v) => (!v ? "Qaytarma tarixini seçin." : days() < 1 ? "Qaytarma tarixi götürmə tarixindən sonra olmalıdır." : "")],
+  ];
+  let firstBad = null;
+  checks.forEach(([input, fn]) => {
+    const msg = fn(input.value);
+    setError(input, msg);
+    if (msg && !firstBad) firstBad = input;
+  });
+  return firstBad;
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const bad = validate();
+  if (bad) { bad.focus(); return; }
+  const car = state.cars.find((c) => c.id === carSelect.value);
+  const d = days();
+  const box = $("#confirm-text");
+  box.innerHTML = "";
+  box.append(
+    el("p", "", `Hörmətli ${$("#r-name").value.trim()}, ${car.model} üçün sorğunuz qeydə alındı.`),
+    el("p", "", `Tarix: ${fromInput.value} – ${toInput.value} (${d} gün). Götürmə yeri: ${$("#r-place").value}.`),
+    el("p", "", `Təxmini məbləğ: ${d * car.pricePerDay} AZN. Menecer ${$("#r-phone").value.trim()} nömrəsi ilə əlaqə saxlayacaq.`),
+    el("p", "muted", "Bu demo layihədir: məlumat heç yerə göndərilmir.")
+  );
+  $("#confirm-modal").showModal();
+  form.reset();
+  $("#estimate").textContent = "";
+});
