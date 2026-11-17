@@ -7,7 +7,7 @@
  * Structure and motion adapted from "Curated Recommendations Scroll Landing Page" by Kedhareswer Naidu
  * (MIT, Copyright (c) 2026 Kedhareswer Naidu, see LICENSE-loupe.txt). Content, palette and photos are AFN's.
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { api, isDemo } from "../lib/api";
 import { CATEGORIES, EXTRAS, asset } from "../lib/shared";
@@ -560,6 +560,18 @@ export default function AfnStory({ height = "100svh" }: { height?: string }) {
   const absTop = () => (rootRef.current ? rootRef.current.getBoundingClientRect().top + window.scrollY : 0);
   const travel = (k: string) => (s.current.len[k] || 0) - s.current.H;
   const jumpToClass = (i: number) => scrollToY(absTop() + s.current.off.zoom + drumHold(i, CATEGORIES.length) * travel("zoom"));
+  // arrow keys spin the drum one class at a time; focus follows (roving tabindex)
+  const onDrumKey = (ev: ReactKeyboardEvent<HTMLDivElement>) => {
+    const n = CATEGORIES.length;
+    const step = ev.key === "ArrowDown" || ev.key === "ArrowRight" ? 1 : ev.key === "ArrowUp" || ev.key === "ArrowLeft" ? -1 : 0;
+    const to = ev.key === "Home" ? 0 : ev.key === "End" ? n - 1 : Math.max(0, Math.min(n - 1, s.current.col + step));
+    if (!step && ev.key !== "Home" && ev.key !== "End") return;
+    ev.preventDefault();
+    jumpToClass(to);
+    s.current.col = to;
+    setCol(to);
+    ((els.current.drum as HTMLElement | null)?.children[to] as HTMLElement | undefined)?.focus({ preventScroll: true });
+  };
   const next = () => {
     const st = s.current;
     const base = absTop();
@@ -980,20 +992,27 @@ export default function AfnStory({ height = "100svh" }: { height?: string }) {
               <span className="st-vlab st-caps" style={{ left: "20%", top: "50%", "--c": "var(--u)" } as CSSProperties}>
                 Klass
               </span>
-              <div className="st-drum" role="group" aria-label="Klass seçin">
-                {classes.map((c, k) => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    className="st-di st-hit"
-                    style={{ "--i": k } as CSSProperties}
-                    aria-current={k === col ? "true" : undefined}
-                    onClick={() => jumpToClass(k)}
-                    data-cursor={k === col ? "Bu klass" : "Fırlat"}
-                  >
-                    {c.name}
-                  </button>
-                ))}
+              <div className="st-drum" role="group" aria-label="Klass seçin (ox düymələri ilə dəyişin)" ref={reg("drum")} onKeyDown={onDrumKey}>
+                {classes.map((c, k) => {
+                  // two or more steps from the centre the class is faded out: not clickable, not focusable, not announced
+                  const far = Math.abs(k - col) >= 2;
+                  return (
+                    <button
+                      key={c.name}
+                      type="button"
+                      className="st-di st-hit"
+                      style={{ "--i": k } as CSSProperties}
+                      data-far={far ? "" : undefined}
+                      aria-hidden={far ? true : undefined}
+                      tabIndex={k === col ? 0 : -1}
+                      aria-current={k === col ? "true" : undefined}
+                      onClick={() => jumpToClass(k)}
+                      data-cursor={k === col ? "Bu klass" : "Fırlat"}
+                    >
+                      <span>{c.name}</span>
+                    </button>
+                  );
+                })}
               </div>
               {cls && (
                 <Link to={`/park?category=${encodeURIComponent(cls.name)}`} className="st-chip st-hit" data-cursor="Avtoparka bax">
