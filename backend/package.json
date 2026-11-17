@@ -1,27 +1,40 @@
 {
   "name": "afn-rent-a-car-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "REST API for the AFN rent a car demo: cars, categories, hero slides and reservation requests (Express + MongoDB)",
-  "main": "src/server.js",
+  "description": "REST API for AFN rent a car: cars, locations, extras, bookings, reviews, contact messages, customer and admin auth (Express + TypeScript + MongoDB)",
+  "main": "dist/server.js",
   "engines": { "node": ">=20" },
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "seed": "node src/seed.js",
-    "test": "node --test test/*.test.js"
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "seed": "tsx src/seed.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20.17.10",
+    "@types/supertest": "^6.0.2",
     "mongodb-memory-server-core": "^10.1.4",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }
