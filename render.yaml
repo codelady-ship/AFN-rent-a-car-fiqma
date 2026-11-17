@@ -1,4 +1,4 @@
-# Render Blueprint for the API in backend/ (free web service).
+# Render Blueprint for the API in backend/ (free web service, Node + TypeScript build).
 # The database is MongoDB Atlas (free M0 cluster): paste its connection string as MONGODB_URI.
 services:
   - type: web
@@ -6,13 +6,13 @@ services:
     runtime: node
     plan: free
     rootDir: backend
-    buildCommand: npm ci --omit=dev
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
-        value: "22"
+        value: "20"
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
@@ -22,6 +22,6 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: CORS_ORIGINS
-        value: https://codelady-ship.github.io
+        sync: false
       - key: SEED_ON_START
         value: "true"
