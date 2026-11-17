@@ -112,10 +112,28 @@ const Plus = ({ on }: { on: boolean }) => (
 );
 const letters = (text: string, key: string) =>
   text.split("").map((ch, i) => (
-    <span key={key + i} style={{ "--i": i } as CSSProperties}>
-      {ch === " " ? " " : ch}
+    <span key={key + i} className={ch === " " ? "st-sp" : undefined} style={{ "--i": i } as CSSProperties}>
+      {ch === " " ? " " : ch}
     </span>
   ));
+/** Letter spans grouped by word, with real spaces between words, so a long line can wrap on a phone. */
+const wrapLetters = (text: string, key: string) => {
+  let i = 0;
+  return text.split(" ").flatMap((w, k) => {
+    const start = i;
+    i += w.length + 1;
+    return [
+      k > 0 ? " " : null,
+      <span key={key + "w" + k} className="st-wd">
+        {w.split("").map((ch, j) => (
+          <span key={key + (start + j)} style={{ "--i": start + j } as CSSProperties}>
+            {ch}
+          </span>
+        ))}
+      </span>,
+    ];
+  });
+};
 const words = (text: string, delay: number, step: number) =>
   text.split(" ").flatMap((w, i) => [
     i > 0 ? " " : null,
@@ -284,12 +302,12 @@ export default function AfnStory({ height = "100svh" }: { height?: string }) {
         if (!f) return;
         const q = flyAt(f.x, f.y, f.z, cam, W, H);
         // a photo passing behind the headline steps back so the words stay readable
-        const behind = Math.abs(q.x - W / 2) < W * 0.24 && Math.abs(q.y - H / 2) < H * 0.11 ? 0.18 : 1;
+        const behind = Math.abs(q.x - W / 2) < W * (W < 700 ? 0.5 : 0.24) && Math.abs(q.y - H / 2) < H * (W < 700 ? 0.16 : 0.11) ? 0.18 : 1;
         const o = q.o * fade * behind;
         put(el, "opacity", o.toFixed(3));
         if (o > 0.002) {
           put(el, "transform", "translate3d(" + (q.x - tw / 2).toFixed(1) + "px," + (q.y - tw * 0.625).toFixed(1) + "px,0) scale(" + (q.s * 1.2).toFixed(4) + ")");
-          put(el, "zIndex", String(Math.round(100 - q.d * 2)));
+          put(el, "zIndex", String(Math.min(150, Math.round(100 - q.d * 2))));
         }
       });
       const I = e.intro;
@@ -774,7 +792,7 @@ export default function AfnStory({ height = "100svh" }: { height?: string }) {
             </div>
             <span className="st-capbg" />
             <p className="st-cap" style={{ "--n": caption.length } as CSSProperties} aria-label={caption}>
-              {letters(caption, "cap")}
+              {wrapLetters(caption, "cap")}
             </p>
             {fc && (
               <div className="st-co" ref={reg("callouts")} aria-label="Seçilmiş avtomobil">
@@ -1029,7 +1047,7 @@ export default function AfnStory({ height = "100svh" }: { height?: string }) {
           <div className="st-pl st-pc" ref={reg("cta")} data-off="">
             <h2 id="cta-h" className="m-0" style={{ font: "inherit" }}>
               <span style={{ "--n": ctaText.length } as CSSProperties} aria-label={ctaText}>
-                {letters(ctaText, "cta")}
+                {wrapLetters(ctaText, "cta")}
               </span>
             </h2>
             <Link to="/rezervasiya" className="st-btn st-btn-accent" data-magnet="" data-cursor="Rezerv et">
