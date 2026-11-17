@@ -23,7 +23,7 @@
 }
 .st-root * { box-sizing: border-box; }
 .st-root svg, .st-root img { max-width: none; }
-.st-caps { font-size: 11px; font-weight: 600; line-height: 1.3; letter-spacing: 0.09em; text-transform: uppercase; }
+.st-caps { font-size: 12px; font-weight: 600; line-height: 1.3; letter-spacing: 0.09em; text-transform: uppercase; }
 .st-track { position: relative; height: calc(var(--h) * var(--len)); }
 .st-stage { position: sticky; top: 0; height: var(--h); overflow: hidden; background: var(--paper); }
 .st-full { position: absolute; inset: 0; will-change: clip-path, transform; }
@@ -172,7 +172,7 @@
 .st-pab { top: 42%; transform: translateY(-50%); opacity: calc(1 - var(--sw, 0)); pointer-events: none; }
 .st-pc { top: 58%; display: flex; flex-direction: column; align-items: center; gap: 22px; }
 .st-pc h2 .st-wd > span { opacity: clamp(0, var(--ty, 0) * (var(--n) + 4) - var(--i), 1); }
-.st-pc .st-btn { min-height: 48px; padding: 0 22px; font-size: 16px; opacity: clamp(0, (var(--ty, 0) - 0.7) * 3.3, 1); transform: scale(calc(0.8 + 0.2 * clamp(0, (var(--ty, 0) - 0.7) * 3.3, 1))); }
+.st-pc .st-btn { min-height: 48px; padding: 0 22px; font-size: 16px; opacity: clamp(0, (var(--ty, 0) - 0.7) * 3.3, 1); transform: scale(calc(0.92 + 0.08 * clamp(0, (var(--ty, 0) - 0.7) * 3.3, 1))); }
 .st-pc[data-off] { pointer-events: none; }
 .st-pf { position: absolute; inset: 0; z-index: 10; pointer-events: none; --tw: clamp(64px, 7vw, 124px); }
 .st-tile { position: absolute; will-change: transform; left: calc(var(--tw) * -0.5); top: calc(var(--tw) * -0.625); width: var(--tw); aspect-ratio: 4 / 5; border-radius: 6px; overflow: hidden; pointer-events: auto; cursor: pointer; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16); opacity: 0; transform: translate(calc(var(--x) + (var(--cx) - var(--x)) * var(--g, 0) * 0.78), calc(var(--y) + (var(--cy) - var(--y)) * var(--g, 0) * 0.78)) rotate(calc(var(--r) * (1 - var(--g, 0) * 0.8))) scale(1.4); transition: transform 0.45s cubic-bezier(0.2, 1.3, 0.4, 1), opacity 0.2s; }

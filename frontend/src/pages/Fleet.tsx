@@ -9,7 +9,7 @@ import type { Car, CarFilters } from "../lib/types";
 const num = (v: string | null) => (v ? Number(v) : undefined);
 
 export default function Fleet() {
-  useMeta("Avtopark – icarəyə avtomobillər", "AFN avtoparkı: ekonom, biznes, premium, SUV və avtobuslar. Klass, qiymət, yer sayı, sürətlər qutusu və tarixə görə filtr.");
+  useMeta("Avtopark – icarəyə avtomobillər", "AFN rent a car avtoparkı, Bakı: ekonom, biznes, premium, krossover/SUV və avtobuslar. Klass, gündəlik qiymət, yer sayı, sürətlər qutusu və tarixə görə filtr.");
   const [params, setParams] = useSearchParams();
   const [cars, setCars] = useState<Car[] | null>(null);
   const [error, setError] = useState("");

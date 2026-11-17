@@ -24,7 +24,7 @@ export default function CarDetail() {
   const [comment, setComment] = useState("");
   const [reviewMsg, setReviewMsg] = useState("");
 
-  useMeta(car ? `${car.model} icarəsi – ${car.pricePerDay} AZN/gün` : "Avtomobil", car ? `${car.model} (${car.year}), ${car.seats} yer, ${car.transmission}, ${car.fuelType}. Gündəlik ${car.pricePerDay} AZN. AFN rent a car, Bakı.` : undefined);
+  useMeta(car ? `${car.model} icarəsi – ${car.pricePerDay} AZN/gün` : "Avtomobil", car ? `${car.model} (${car.year}) icarəsi Bakıda: ${car.seats} yer, ${car.transmission}, ${car.fuelType}. Gündəlik ${car.pricePerDay} AZN, onlayn rezervasiya, hava limanına və ünvana çatdırılma – AFN rent a car.` : undefined);
 
   useEffect(() => {
     let live = true;
@@ -80,7 +80,7 @@ export default function CarDetail() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <nav aria-label="Naviqasiya zənciri" className="text-sm text-muted">
-        <Link to="/park" className="text-inherit">
+        <Link to="/park" className="inline-flex min-h-11 items-center text-inherit">
           Avtopark
         </Link>{" "}
         / <span translate="no">{car.model}</span>

@@ -6,7 +6,7 @@ import { useApp, useMeta } from "../lib/store";
 import { ApiError } from "../lib/types";
 
 export default function Account() {
-  useMeta("Daxil ol və ya qeydiyyat", "AFN rent a car hesabı: rezervasiyalarınızı izləyin və ləğv edin.");
+  useMeta("Daxil ol və ya qeydiyyat", "AFN rent a car hesabı: rezervasiyalarınızı izləyin və ləğv edin.", { noindex: true });
   const [params] = useSearchParams();
   const nav = useNavigate();
   const { setSession, demo, say } = useApp();

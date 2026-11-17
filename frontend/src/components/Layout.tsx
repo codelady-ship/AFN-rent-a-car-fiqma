@@ -38,7 +38,7 @@ export default function Layout() {
       </a>
       <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2">
-          <Link to="/" aria-label="AFN rent a car – ana səhifə" className="shrink-0">
+          <Link to="/" aria-label="AFN rent a car – ana səhifə" className="flex min-h-11 shrink-0 items-center">
             <Logo />
           </Link>
           <button

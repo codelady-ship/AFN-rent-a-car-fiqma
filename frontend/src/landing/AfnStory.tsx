@@ -800,7 +800,7 @@ export default function AfnStory({ height = "100svh" }: { height?: string }) {
                   <img className="st-car" src={asset(c.image)} alt={k === feat ? `${c.model}, ${c.year}` : ""} width={700} height={467} draggable={false} />
                 </div>
               ))}
-              <img className="st-img st-flick" ref={reg("flick")} src={FLICK[0]} alt="" draggable={false} />
+              <img className="st-img st-flick" ref={reg("flick")} src={FLICK[0]} alt="" width={320} height={400} decoding="async" draggable={false} />
             </div>
             <span className="st-capbg" />
             <p className="st-cap" style={{ "--n": caption.length } as CSSProperties} aria-label={caption}>

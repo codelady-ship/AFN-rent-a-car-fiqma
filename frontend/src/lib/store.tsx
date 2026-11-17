@@ -90,16 +90,36 @@ export function useApp() {
   return ctx;
 }
 
-/** Sets the page title, description and canonical link for the current route. */
-export function useMeta(title: string, description?: string) {
+/** Sets a <meta> in <head>, creating it when index.html does not have it. */
+function setMeta(attr: "name" | "property", key: string, content: string) {
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`);
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content);
+}
+
+/**
+ * Sets the page title, description, canonical link, Open Graph/Twitter tags and robots for the current route.
+ * noindex: private or utility routes (sign-in, my bookings, admin, 404) stay out of search results.
+ */
+export function useMeta(title: string, description?: string, { noindex = false }: { noindex?: boolean } = {}) {
   useEffect(() => {
     document.title = title.includes("AFN") ? title : `${title} | AFN rent a car`;
-    if (description) document.querySelector('meta[name="description"]')?.setAttribute("content", description);
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) {
-      const site = (import.meta.env.VITE_SITE_URL || location.origin).replace(/\/$/, "");
-      const path = location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/";
-      canonical.setAttribute("href", site + path);
+    const site = (import.meta.env.VITE_SITE_URL || location.origin).replace(/\/$/, "");
+    const path = location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/";
+    const url = site + path;
+    document.querySelector('link[rel="canonical"]')?.setAttribute("href", url);
+    setMeta("property", "og:title", document.title);
+    setMeta("name", "twitter:title", document.title);
+    setMeta("property", "og:url", url);
+    if (description) {
+      setMeta("name", "description", description);
+      setMeta("property", "og:description", description);
+      setMeta("name", "twitter:description", description);
     }
-  }, [title, description]);
+    setMeta("name", "robots", noindex ? "noindex, follow" : "index, follow, max-image-preview:large");
+  }, [title, description, noindex]);
 }
