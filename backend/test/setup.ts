@@ -3,7 +3,7 @@ process.env.JWT_SECRET = "test-secret";
 process.env.ADMIN_EMAIL = "admin@test.local";
 process.env.ADMIN_PASSWORD = "test-password";
 process.env.AUTH_RATE_LIMIT ??= "1000";
-process.env.PUBLIC_WRITE_LIMIT ??= "1000";
+process.env.PUBLIC_RATE_LIMIT ??= "1000";
 
 import { MongoMemoryServer } from "mongodb-memory-server-core";
 import mongoose from "mongoose";

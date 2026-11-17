@@ -148,6 +148,46 @@ describe("admin", () => {
   });
 });
 
+// Tests added in #4's review round, kept as they were (ported to vitest).
+describe("#4 review: atomic bookings and real dates", () => {
+  it("parallel requests for the same car and dates -> exactly one 201", async () => {
+    const car = (await request(app).get("/api/cars?available=true")).body[2];
+    const body = (i: number) => ({ name: "Paralel Müştəri", phone: "+994 50 000 00 0" + i, car: car.id, from: isoIn(20), to: isoIn(24) });
+    const statuses = (await Promise.all(Array.from({ length: 8 }, (_, i) => request(app).post("/api/reservations").send(body(i))))).map((r) => r.status);
+    expect(statuses.filter((s) => s === 201)).toHaveLength(1);
+    expect(statuses.filter((s) => s === 409)).toHaveLength(7);
+    // overlapping in parallel from both sides: still one winner
+    const a = { ...body(8), from: isoIn(30), to: isoIn(33) };
+    const b = { ...body(9), from: isoIn(32), to: isoIn(35) };
+    const pair = (await Promise.all([request(app).post("/api/reservations").send(a), request(app).post("/api/reservations").send(b)])).map((r) => r.status);
+    expect(pair.sort()).toEqual([201, 409]);
+    // back-to-back is fine: the return day is free for the next customer
+    const next = await request(app).post("/api/reservations").send({ ...body(7), from: isoIn(24), to: isoIn(26) });
+    expect(next.status, JSON.stringify(next.body)).toBe(201);
+  });
+
+  it("impossible calendar dates are rejected", async () => {
+    const car = (await request(app).get("/api/cars?available=true")).body[3];
+    const res = await request(app).post("/api/reservations").send({ name: "Test Müştəri", phone: "+994500000000", car: car.id, from: "2027-02-30", to: "2027-03-05" });
+    expect(res.status).toBe(400);
+    expect(res.body.details[0].field).toBe("from");
+    expect((await request(app).post("/api/reservations").send({ name: "Test Müştəri", phone: "+994500000000", car: car.id, from: "2027-13-01", to: "2027-13-03" })).status).toBe(400);
+  });
+
+  it("admin: cancelling frees the days, re-opening checks them again", async () => {
+    const auth = { Authorization: `Bearer ${token}` };
+    const car = (await request(app).get("/api/cars?available=true")).body[4];
+    const body = { name: "Test Müştəri", phone: "+994500000000", car: car.id, from: isoIn(40), to: isoIn(42) };
+    const first = await request(app).post("/api/reservations").send(body);
+    expect(first.status).toBe(201);
+    const id = (await request(app).get("/api/reservations").set(auth)).body.find((r: { reference: string }) => r.reference === first.body.reference).id;
+    expect((await request(app).post("/api/reservations").send(body)).status).toBe(409);
+    expect((await request(app).patch(`/api/reservations/${id}`).set(auth).send({ status: "cancelled" })).body.status).toBe("cancelled");
+    expect((await request(app).post("/api/reservations").send(body)).status).toBe(201); // days are free again
+    expect((await request(app).patch(`/api/reservations/${id}`).set(auth).send({ status: "pending" })).status).toBe(409);
+  });
+});
+
 describe("CORS and errors", () => {
   it("allowed origin echoed, unknown origin refused", async () => {
     const ok = await request(app).get("/api/cars").set("Origin", "https://codelady-ship.github.io");
