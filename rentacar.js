@@ -1,9 +1,14 @@
 // AFN rent a car – page logic
-// Data source: by default the static file backend/rentAcar.json (works on GitHub Pages).
-// To use the json-server REST API instead, run it (see README) and open the page with
-// ?api=http://localhost:3000  — e.g. index.html?api=http://localhost:3000
-const API_URL = new URLSearchParams(location.search).get("api");
+// Data source: the Express + MongoDB API in backend/ (URL set in config.js).
+// If the API is not configured or does not answer within 8 s, the page falls back to the
+// static file backend/rentAcar.json, so the GitHub Pages site always works (demo mode).
+// ?api=<url> is honoured ONLY when the page itself runs on localhost: on the live site a
+// crafted link must not be able to send visitors' names and phone numbers to another server.
+const IS_LOCAL = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+const API_URL = ((IS_LOCAL && new URLSearchParams(location.search).get("api")) || window.AFN_API_URL || "").replace(/\/$/, "");
+const API_TIMEOUT = 8000;
 const INITIAL_CARDS = 6;
+let apiLive = false; // true once data really came from the API
 
 let staticDb;
 const loadStaticDb = () => {
@@ -11,8 +16,16 @@ const loadStaticDb = () => {
   return staticDb;
 };
 const getData = (key) =>
-  (API_URL ? axios.get(`${API_URL.replace(/\/$/, "")}/${key}`).then((res) => res.data) : Promise.reject(new Error("static")))
-    .catch(() => loadStaticDb().then((db) => db[key]));
+  (API_URL
+    ? axios.get(`${API_URL}/api/${key}`, { timeout: API_TIMEOUT }).then((res) => {
+        if (!Array.isArray(res.data)) throw new Error("bad response");
+        return res.data;
+      })
+    : Promise.reject(new Error("static"))
+  ).then(
+    (rows) => ({ rows, live: true }),
+    () => loadStaticDb().then((db) => ({ rows: db[key], live: false }))
+  );
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -38,7 +51,7 @@ $$("a", nav).forEach((a) => a.addEventListener("click", () => setNav(false)));
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && nav.classList.contains("open")) { setNav(false); navToggle.focus(); } });
 
 /* ---------- Hero slider ---------- */
-getData("slides").then((slides) => {
+getData("slides").then(({ rows: slides }) => {
   const wrapper = $("#hero-slides");
   slides.forEach((s) => {
     const slide = el("div", "swiper-slide");
@@ -134,7 +147,9 @@ showAllBtn.addEventListener("click", () => {
 $$(".class-tile").forEach((t) => t.addEventListener("click", () => selectCategory(t.dataset.category, true)));
 
 Promise.all([getData("categories"), getData("cars")])
-  .then(([categories, cars]) => {
+  .then(([{ rows: categories, live: catsLive }, { rows: cars, live: carsLive }]) => {
+    apiLive = catsLive && carsLive;
+    if (apiLive) $(".demo-note").textContent = "Sorğu serverdə qeydə alınır, menecer təsdiq üçün sizinlə əlaqə saxlayacaq.";
     state.cars = cars;
     renderFilters(categories);
     renderCars();
@@ -232,21 +247,74 @@ function validate() {
   return firstBad;
 }
 
-form.addEventListener("submit", (e) => {
+const FIELD_INPUTS = { name: "#r-name", phone: "#r-phone", car: "#r-car", from: "#r-from", to: "#r-to" };
+
+function showConfirmation(lines, live) {
+  $("#confirm-title").textContent = live ? "Sorğunuz qəbul edildi" : "Sorğunuz qəbul edildi (demo)";
+  const box = $("#confirm-text");
+  box.innerHTML = "";
+  lines.forEach(([cls, text]) => box.append(el("p", cls, text)));
+  $("#confirm-modal").showModal();
+  form.reset();
+  $("#estimate").textContent = "";
+}
+
+// Sends the request to the API. Resolves with the saved reservation, or with null when
+// the API cannot be reached (then the demo confirmation is shown instead).
+async function sendReservation(payload) {
+  if (!apiLive) return null;
+  try {
+    const res = await axios.post(`${API_URL}/api/reservations`, payload, { timeout: API_TIMEOUT });
+    return res.data;
+  } catch (err) {
+    if (!err.response) return null; // network error / timeout -> demo mode
+    const { status, data } = err.response;
+    if (status === 400 && data && Array.isArray(data.details)) {
+      let first = null;
+      data.details.forEach(({ field, message }) => {
+        const input = FIELD_INPUTS[field] && $(FIELD_INPUTS[field]);
+        if (input) { setError(input, message); first = first || input; }
+      });
+      if (first) { first.focus(); throw err; }
+    }
+    setError(carSelect, (data && data.error) || "Sorğu göndərilmədi. Bir az sonra yenidən cəhd edin.");
+    carSelect.focus();
+    throw err;
+  }
+}
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const bad = validate();
   if (bad) { bad.focus(); return; }
   const car = state.cars.find((c) => c.id === carSelect.value);
   const d = days();
-  const box = $("#confirm-text");
-  box.innerHTML = "";
-  box.append(
-    el("p", "", `Hörmətli ${$("#r-name").value.trim()}, ${car.model} üçün sorğunuz qeydə alındı.`),
-    el("p", "", `Tarix: ${fromInput.value} – ${toInput.value} (${d} gün). Götürmə yeri: ${$("#r-place").value}.`),
-    el("p", "", `Təxmini məbləğ: ${d * car.pricePerDay} AZN. Menecer ${$("#r-phone").value.trim()} nömrəsi ilə əlaqə saxlayacaq.`),
-    el("p", "muted", "Bu demo layihədir: məlumat heç yerə göndərilmir.")
-  );
-  $("#confirm-modal").showModal();
-  form.reset();
-  $("#estimate").textContent = "";
+  const name = $("#r-name").value.trim();
+  const phone = $("#r-phone").value.trim();
+  const place = $("#r-place").value;
+  const submitBtn = $('button[type="submit"]', form);
+  submitBtn.disabled = true;
+  let saved;
+  try {
+    saved = await sendReservation({ name, phone, car: car.id, from: fromInput.value, to: toInput.value, place, note: $("#r-note").value.trim() });
+  } catch {
+    return;
+  } finally {
+    submitBtn.disabled = false;
+  }
+  if (saved) {
+    showConfirmation([
+      ["", `Hörmətli ${name}, ${saved.carModel} üçün sorğunuz qeydə alındı.`],
+      ["", `Rezervasiya nömrəsi: ${saved.reference}.`],
+      ["", `Tarix: ${saved.from} – ${saved.to} (${saved.days} gün). Götürmə yeri: ${saved.place}.`],
+      ["", `Məbləğ: ${saved.total} AZN. Menecer ${phone} nömrəsi ilə əlaqə saxlayacaq.`],
+    ], true);
+  } else {
+    showConfirmation([
+      ["", `Hörmətli ${name}, ${car.model} üçün sorğunuz qeydə alındı.`],
+      ["", `Tarix: ${fromInput.value} – ${toInput.value} (${d} gün). Götürmə yeri: ${place}.`],
+      ["", `Təxmini məbləğ: ${d * car.pricePerDay} AZN. Menecer ${phone} nömrəsi ilə əlaqə saxlayacaq.`],
+      ["muted", "Demo rejim: server əlçatan deyil, məlumat heç yerə göndərilmədi."],
+    ], false);
+  }
 });

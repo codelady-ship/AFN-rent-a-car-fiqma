@@ -1,11 +1,27 @@
 {
   "name": "afn-rent-a-car-api",
+  "version": "1.0.0",
   "private": true,
-  "description": "Local REST API for the AFN rent a car demo (json-server)",
+  "description": "REST API for the AFN rent a car demo: cars, categories, hero slides and reservation requests (Express + MongoDB)",
+  "main": "src/server.js",
+  "engines": { "node": ">=20" },
   "scripts": {
-    "start": "json-server rentAcar.json --port 3000"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "json-server": "1.0.0-beta.3"
+    "mongodb-memory-server-core": "^10.1.4",
+    "supertest": "^7.0.0"
   }
 }

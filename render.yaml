@@ -1,0 +1,27 @@
+# Render Blueprint for the API in backend/ (free web service).
+# The database is MongoDB Atlas (free M0 cluster): paste its connection string as MONGODB_URI.
+services:
+  - type: web
+    name: afn-rent-a-car-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://codelady-ship.github.io
+      - key: SEED_ON_START
+        value: "true"
