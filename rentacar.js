@@ -1,8 +1,11 @@
 // AFN rent a car – page logic
-// Data source: the Express + MongoDB API in backend/ (URL set in config.js or with ?api=<url>).
+// Data source: the Express + MongoDB API in backend/ (URL set in config.js).
 // If the API is not configured or does not answer within 8 s, the page falls back to the
 // static file backend/rentAcar.json, so the GitHub Pages site always works (demo mode).
-const API_URL = (new URLSearchParams(location.search).get("api") || window.AFN_API_URL || "").replace(/\/$/, "");
+// ?api=<url> is honoured ONLY when the page itself runs on localhost: on the live site a
+// crafted link must not be able to send visitors' names and phone numbers to another server.
+const IS_LOCAL = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+const API_URL = ((IS_LOCAL && new URLSearchParams(location.search).get("api")) || window.AFN_API_URL || "").replace(/\/$/, "");
 const API_TIMEOUT = 8000;
 const INITIAL_CARDS = 6;
 let apiLive = false; // true once data really came from the API
