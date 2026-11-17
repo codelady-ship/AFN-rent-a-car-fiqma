@@ -15,7 +15,7 @@ A responsive car rental landing page built from the **AFN rent a car Figma desig
 - Car cards rendered from data, with a **"Hamısını göstər" / "Daha az göstər"** toggle (6 cards first).
 - **Car detail modal** (native `<dialog>`) with specs and a "reserve this car" button that pre-selects the car in the form.
 - Advantages, delivery and reservation sections.
-- **Reservation form** with validation (name, phone, car, dates; the return date must be after the pick-up date) and a live price estimate. With the API online the request is saved in MongoDB and the visitor gets a reservation number (e.g. `AFN-3F9A1C`); the server checks the dates, the car's availability and overlapping bookings and calculates the total itself. Offline it shows a demo confirmation.
+- **Reservation form** with validation (name, phone, car, dates; the return date must be after the pick-up date) and a live price estimate. With the API online the request is saved in MongoDB and the visitor gets a reservation number (e.g. `AFN-3F9A1C`); the server checks the dates (real calendar dates, no past days), the car's availability and overlapping bookings, and calculates the total itself. Double booking is impossible even for parallel requests: every booked car-day is a document with a unique `{car, day}` index. Offline it shows a demo confirmation.
 - **Admin API** (JWT): add, edit and delete cars, list reservation requests and confirm or cancel them.
 - Hamburger menu on mobile, `tel:`/`mailto:` links, skip link and keyboard-accessible controls.
 - SEO: title, description, canonical, Open Graph/Twitter tags, favicon, `robots.txt`, `sitemap.xml`, alt text on every image.
@@ -36,7 +36,7 @@ index.html + rentacar.js  ──fetch (8 s timeout)──▶  Express API (backe
         └── if the API is not set or not reachable: backend/rentAcar.json (static demo data, also the seed file)
 ```
 
-The API URL is set in `config.js` (`window.AFN_API_URL`). For a quick test you can also add `?api=<url>` to the page address.
+The API URL is set in `config.js` (`window.AFN_API_URL`). For local testing you can also add `?api=<url>` to the page address; this only works when the page itself runs on `localhost`/`127.0.0.1`, so a crafted link cannot redirect the live form.
 
 ## REST API
 

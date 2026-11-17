@@ -5,12 +5,14 @@ const assert = require("node:assert/strict");
 process.env.JWT_SECRET = "test-secret";
 process.env.ADMIN_EMAIL = "admin@test.local";
 process.env.ADMIN_PASSWORD = "test-password";
+process.env.PUBLIC_RATE_LIMIT = "200";
 
 const mongoose = require("mongoose");
 const request = require("supertest");
 const { MongoMemoryServer } = require("mongodb-memory-server-core");
 const { createApp } = require("../src/app");
 const { seed } = require("../src/seed");
+const { ensureIndexes } = require("../src/lib/db");
 
 let mongo;
 let app;
@@ -20,6 +22,7 @@ const isoIn = (days) => new Date(Date.now() + days * 86400000).toISOString().sli
 before(async () => {
   mongo = await MongoMemoryServer.create();
   await mongoose.connect(mongo.getUri("afn-test"));
+  await ensureIndexes();
   await seed();
   app = createApp();
 });
@@ -105,6 +108,43 @@ test("admin: car CRUD and reservation status", async () => {
   assert.ok(list.body.length >= 1);
   const patched = await request(app).patch(`/api/reservations/${list.body[0].id}`).set(auth).send({ status: "confirmed" });
   assert.equal(patched.body.status, "confirmed");
+});
+
+test("reservation: parallel requests for the same car and dates -> exactly one 201", async () => {
+  const car = (await request(app).get("/api/cars?available=true")).body[2];
+  const body = (i) => ({ name: "Paralel Müştəri", phone: "+994 50 000 00 0" + i, car: car.id, from: isoIn(20), to: isoIn(24) });
+  const statuses = (await Promise.all(Array.from({ length: 8 }, (_, i) => request(app).post("/api/reservations").send(body(i))))).map((r) => r.status);
+  assert.equal(statuses.filter((s) => s === 201).length, 1, statuses.join(","));
+  assert.equal(statuses.filter((s) => s === 409).length, 7, statuses.join(","));
+  // overlapping in parallel from both sides: still one winner
+  const a = { ...body(8), from: isoIn(30), to: isoIn(33) };
+  const b = { ...body(9), from: isoIn(32), to: isoIn(35) };
+  const pair = (await Promise.all([request(app).post("/api/reservations").send(a), request(app).post("/api/reservations").send(b)])).map((r) => r.status);
+  assert.deepEqual(pair.sort(), [201, 409]);
+  // back-to-back is fine: the return day is free for the next customer
+  const next = await request(app).post("/api/reservations").send({ ...body(7), from: isoIn(24), to: isoIn(26) });
+  assert.equal(next.status, 201, JSON.stringify(next.body));
+});
+
+test("reservation: impossible calendar dates are rejected", async () => {
+  const car = (await request(app).get("/api/cars?available=true")).body[3];
+  const res = await request(app).post("/api/reservations").send({ name: "Test Müştəri", phone: "+994500000000", car: car.id, from: "2027-02-30", to: "2027-03-05" });
+  assert.equal(res.status, 400);
+  assert.equal(res.body.details[0].field, "from");
+  assert.equal((await request(app).post("/api/reservations").send({ name: "Test Müştəri", phone: "+994500000000", car: car.id, from: "2027-13-01", to: "2027-13-03" })).status, 400);
+});
+
+test("admin: cancelling frees the days, re-opening checks them again", async () => {
+  const auth = { Authorization: `Bearer ${token}` };
+  const car = (await request(app).get("/api/cars?available=true")).body[4];
+  const body = { name: "Test Müştəri", phone: "+994500000000", car: car.id, from: isoIn(40), to: isoIn(42) };
+  const first = await request(app).post("/api/reservations").send(body);
+  assert.equal(first.status, 201);
+  const id = (await request(app).get("/api/reservations").set(auth)).body.find((r) => r.reference === first.body.reference).id;
+  assert.equal((await request(app).post("/api/reservations").send(body)).status, 409);
+  assert.equal((await request(app).patch(`/api/reservations/${id}`).set(auth).send({ status: "cancelled" })).body.status, "cancelled");
+  assert.equal((await request(app).post("/api/reservations").send(body)).status, 201); // days are free again
+  assert.equal((await request(app).patch(`/api/reservations/${id}`).set(auth).send({ status: "pending" })).status, 409);
 });
 
 test("CORS: allowed origin echoed, unknown origin refused", async () => {

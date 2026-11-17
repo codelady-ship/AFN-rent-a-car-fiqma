@@ -61,7 +61,17 @@ const reservationSchema = new mongoose.Schema(
   opts
 );
 
+// One document per booked car per day. The unique {car, day} index makes double booking
+// impossible even when requests arrive in parallel: the second insert fails with E11000.
+const carDaySchema = new mongoose.Schema({
+  car: { type: mongoose.Schema.Types.ObjectId, ref: "Car", required: true },
+  day: { type: String, required: true }, // YYYY-MM-DD
+  reference: { type: String, required: true, index: true },
+});
+carDaySchema.index({ car: 1, day: 1 }, { unique: true });
+
 module.exports = {
+  CarDay: mongoose.model("CarDay", carDaySchema),
   CATEGORIES,
   PLACES,
   Slide: mongoose.model("Slide", slideSchema),

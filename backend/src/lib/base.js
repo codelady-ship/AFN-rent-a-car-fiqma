@@ -36,9 +36,10 @@ function createBaseApp() {
   return app;
 }
 
-// Rate limit for public write endpoints (orders, bookings, scores...).
-const publicWriteLimiter = () =>
-  rateLimit({ windowMs: 10 * 60 * 1000, limit: 20, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "Too many requests, try again later" } });
+// Rate limit for public endpoints (bookings, orders, scores...): PUBLIC_RATE_LIMIT requests
+// per 10 minutes per IP (default 20).
+const publicWriteLimiter = (limit = Number(process.env.PUBLIC_RATE_LIMIT) || 20) =>
+  rateLimit({ windowMs: 10 * 60 * 1000, limit, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "Too many requests, try again later" } });
 
 // toJSON options: expose `id`, hide `_id` and `__v`.
 const jsonOpts = {

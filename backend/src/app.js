@@ -5,9 +5,32 @@ const { z } = require("zod");
 const { createBaseApp, publicWriteLimiter } = require("./lib/base");
 const { requireAdmin } = require("./lib/auth");
 const { HttpError, validate, notFound, errorHandler } = require("./lib/errors");
-const { CATEGORIES, PLACES, Slide, Category, Car, Reservation } = require("./models");
+const { CATEGORIES, PLACES, Slide, Category, Car, Reservation, CarDay } = require("./models");
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD").refine((s) => !Number.isNaN(Date.parse(s)), "Invalid date");
+// Round-trip check: Date.parse("2027-02-30") rolls over to 2 March, so compare the
+// normalised date with the input to reject impossible calendar dates.
+const isRealDate = (s) => {
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+};
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD").refine(isRealDate, "Belə tarix yoxdur.");
+// Booked days: from the pick-up day up to (not including) the return day.
+const bookedDays = (from, count) =>
+  Array.from({ length: count }, (_, i) => new Date(Date.parse(`${from}T00:00:00Z`) + i * 86400000).toISOString().slice(0, 10));
+const isDuplicateKey = (err) => err && (err.code === 11000 || (err.writeErrors || []).some((w) => (w.code || w.err?.code) === 11000));
+const CLASH_MESSAGE = "Bu tarixlərdə avtomobil artıq rezerv olunub. Başqa tarix seçin.";
+
+// Claims every booked day of a car for one reservation reference. All or nothing:
+// on a clash the days already inserted for this reference are removed again.
+async function claimDays(carId, from, days, reference) {
+  try {
+    await CarDay.insertMany(bookedDays(from, days).map((day) => ({ car: carId, day, reference })), { ordered: true });
+  } catch (err) {
+    await CarDay.deleteMany({ reference });
+    if (isDuplicateKey(err)) throw new HttpError(409, CLASH_MESSAGE);
+    throw err;
+  }
+}
 const todayInBaku = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Baku" }).format(new Date());
 const dayDiff = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const objectId = (id) => {
@@ -80,19 +103,20 @@ function createApp() {
     const car = await Car.findById(r.car);
     if (!car) throw new HttpError(400, "Validation failed", [{ field: "car", message: "Avtomobil tapılmadı." }]);
     if (!car.available) throw new HttpError(409, "Bu avtomobil hazırda icarədədir.");
-    const clash = await Reservation.exists({ car: car._id, status: { $ne: "cancelled" }, from: { $lt: r.to }, to: { $gt: r.from } });
-    if (clash) throw new HttpError(409, "Bu tarixlərdə avtomobil artıq rezerv olunub. Başqa tarix seçin.");
-
     const days = dayDiff(r.from, r.to);
-    const doc = await Reservation.create({
-      ...r,
-      reference: "AFN-" + crypto.randomBytes(3).toString("hex").toUpperCase(),
-      car: car._id,
-      carModel: car.model,
-      days,
-      pricePerDay: car.pricePerDay,
-      total: days * car.pricePerDay,
-    });
+    let doc;
+    // The unique {car, day} index decides who gets the car (parallel-safe). A reference
+    // collision (3 random bytes) is retried with a new reference.
+    for (let attempt = 0; !doc; attempt++) {
+      const reference = "AFN-" + crypto.randomBytes(3).toString("hex").toUpperCase();
+      await claimDays(car._id, r.from, days, reference);
+      try {
+        doc = await Reservation.create({ ...r, reference, car: car._id, carModel: car.model, days, pricePerDay: car.pricePerDay, total: days * car.pricePerDay });
+      } catch (err) {
+        await CarDay.deleteMany({ reference });
+        if (!isDuplicateKey(err) || attempt >= 2) throw err;
+      }
+    }
     res.status(201).json({ reference: doc.reference, carModel: doc.carModel, from: doc.from, to: doc.to, days, total: doc.total, place: doc.place, status: doc.status });
   });
 
@@ -119,8 +143,16 @@ function createApp() {
   });
 
   api.patch("/reservations/:id", requireAdmin, validate(statusSchema), async (req, res) => {
-    const doc = await Reservation.findByIdAndUpdate(objectId(req.params.id), { status: req.body.status }, { new: true });
+    const doc = await Reservation.findById(objectId(req.params.id));
     if (!doc) throw new HttpError(404, "Reservation not found");
+    const next = req.body.status;
+    if (next === "cancelled" && doc.status !== "cancelled") {
+      await CarDay.deleteMany({ reference: doc.reference }); // free the days for other customers
+    } else if (next !== "cancelled" && doc.status === "cancelled") {
+      await claimDays(doc.car, doc.from, doc.days, doc.reference); // 409 if someone booked them meanwhile
+    }
+    doc.status = next;
+    await doc.save();
     res.json(doc);
   });
 

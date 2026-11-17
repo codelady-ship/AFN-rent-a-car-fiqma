@@ -7,4 +7,8 @@ async function connect(uri) {
   return mongoose.connection;
 }
 
-module.exports = { connect };
+// Builds every model's indexes before the server takes requests. Unique indexes
+// (e.g. one booking per car and day) are what keeps parallel requests safe.
+const ensureIndexes = () => Promise.all(mongoose.modelNames().map((name) => mongoose.model(name).init()));
+
+module.exports = { connect, ensureIndexes };
