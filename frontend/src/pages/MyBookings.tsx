@@ -16,7 +16,7 @@ export const StatusBadge = ({ s }: { s: string }) => {
 };
 
 export default function MyBookings() {
-  useMeta("Rezervasiyalarım");
+  useMeta("Rezervasiyalarım", undefined, { noindex: true });
   const { session, setSession, say } = useApp();
   const [list, setList] = useState<Booking[] | null>(null);
   const [error, setError] = useState("");

@@ -8,7 +8,7 @@ import { ApiError, type Booking, type Car, type Location, type Quote } from "../
 type Errors = Record<string, string>;
 
 export default function BookingPage() {
-  useMeta("Onlayn rezervasiya", "Avtomobili, tarixləri, götürmə yerini və əlavələri seçin – qiymət dərhal hesablanır. AFN rent a car, Bakı.");
+  useMeta("Onlayn rezervasiya", "Bakıda onlayn avtomobil rezervasiyası: avtomobili, tarixləri, götürmə yerini (ofis, hava limanı, ünvan) və əlavələri seçin – qiymət dərhal hesablanır.");
   const [params] = useSearchParams();
   const { session, draft, setDraft, toggleExtra } = useApp();
   const [cars, setCars] = useState<Car[]>([]);

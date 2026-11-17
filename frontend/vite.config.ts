@@ -25,7 +25,9 @@ function seoFiles(): Plugin {
       this.emitFile({
         type: "asset",
         fileName: "robots.txt",
-        source: `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /hesab\n\nSitemap: ${site}/sitemap.xml\n`,
+        // No Disallow: sign-in, my bookings, admin and 404 send <meta name="robots" content="noindex">, which a
+        // Disallow would hide from crawlers (and in the GitHub Pages build this file sits under the repo path).
+        source: `User-agent: *\nAllow: /\n\nSitemap: ${site}/sitemap.xml\n`,
       });
       this.emitFile({
         type: "asset",

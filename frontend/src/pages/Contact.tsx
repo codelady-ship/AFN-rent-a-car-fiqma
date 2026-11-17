@@ -3,7 +3,7 @@ import { ContactList } from "../components/SiteFooter";
 import { useMeta } from "../lib/store";
 
 export default function Contact() {
-  useMeta("Əlaqə", "AFN rent a car ilə əlaqə: Bakı, Xocalı pr. 13, +994 50 394 91 94, info@afnrentacar.az. Hər gün 09:00–21:00.");
+  useMeta("Əlaqə", "AFN rent a car ilə əlaqə: Bakı, Xocalı prospekti 13, +994 50 394 91 94, info@afnrentacar.az. Hər gün 09:00–21:00. Sual, korporativ və avtobus sorğuları.");
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1fr_1.5fr]">
       <div>

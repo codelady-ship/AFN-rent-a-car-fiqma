@@ -15,7 +15,7 @@ const TABS: [Tab, string][] = [
 ];
 
 export default function Admin() {
-  useMeta("Admin panel");
+  useMeta("Admin panel", undefined, { noindex: true });
   const { session, setSession, say } = useApp();
   const [tab, setTab] = useState<Tab>("panel");
   const [stats, setStats] = useState<Stats | null>(null);
