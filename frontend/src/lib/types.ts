@@ -54,7 +54,7 @@ export type Review = { id: string; authorName: string; rating: number; comment: 
 
 export type Message = { id: string; name: string; email: string; phone?: string; subject?: string; message: string; status: "new" | "read" | "archived"; createdAt?: string };
 
-export type User = { id: string; name: string; email: string; phone?: string; role: "customer" | "admin" };
+export type User = { id: string; name: string; email: string; phone?: string; role: "customer" | "admin" | "demo" };
 export type Session = { token: string; user: User };
 
 export type CarFilters = {
@@ -103,3 +103,6 @@ export class ApiError extends Error {
     return this.details.find((d) => d.field === field)?.message;
   }
 }
+
+/** Admin pages are open to the real admin and to the public read-only demo admin ("demo"). */
+export const canAdmin = (u?: User | null) => u?.role === "admin" || u?.role === "demo";

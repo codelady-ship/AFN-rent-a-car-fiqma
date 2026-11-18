@@ -3,7 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { STATUS_LABEL, azn, prettyDay, todayInBaku } from "../lib/shared";
 import { useApp, useMeta } from "../lib/store";
-import { ApiError, type Booking } from "../lib/types";
+import { ApiError, canAdmin, type Booking } from "../lib/types";
 
 export const StatusBadge = ({ s }: { s: string }) => {
   const cls: Record<string, string> = {
@@ -34,7 +34,7 @@ export default function MyBookings() {
   useEffect(load, [load]);
 
   if (!session) return <Navigate to="/daxil-ol?next=/hesab" replace />;
-  if (session.user.role === "admin") return <Navigate to="/admin" replace />;
+  if (canAdmin(session.user)) return <Navigate to="/admin" replace />;
 
   const cancel = async (b: Booking) => {
     if (!window.confirm(`${b.reference} rezervasiyasını ləğv edək?`)) return;

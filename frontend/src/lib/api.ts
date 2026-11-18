@@ -1,6 +1,6 @@
 // One API surface for the whole app. With VITE_API_URL it talks to the Express API;
 // without it (or when the API cannot be reached for reading) it uses the in-browser demo.
-import { demo } from "./demo";
+import { DEMO_ADMIN, demo } from "./demo";
 import { ApiError, type Booking, type BookingInput, type Car, type CarFilters, type Location, type Message, type Quote, type Review, type Session, type Stats } from "./types";
 
 const BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
@@ -84,6 +84,21 @@ export const api = {
 
   login: (email: string, password: string): Promise<Session> =>
     offline ? demo.login(email, password) : http<Session>("/auth/login", { method: "POST", json: { email, password } }),
+  /**
+   * "Demo admin" button: the public read-only demo admin of the live API (seeded by backend/src/seed.ts).
+   * When the API cannot be reached (not deployed, asleep, offline) it switches to the in-browser sandbox instead.
+   */
+  demoAdmin: async (): Promise<Session> => {
+    if (!offline) {
+      try {
+        return await http<Session>("/auth/login", { method: "POST", json: DEMO_ADMIN });
+      } catch (err) {
+        if (!(err instanceof ApiError) || ![0, 502, 503, 504].includes(err.status)) throw err;
+        goOffline();
+      }
+    }
+    return demo.login(DEMO_ADMIN.email, DEMO_ADMIN.password);
+  },
   register: (name: string, email: string, password: string, phone?: string): Promise<Session> =>
     offline ? demo.register(name, email, password, phone) : http<Session>("/auth/register", { method: "POST", json: { name, email, password, phone } }),
 

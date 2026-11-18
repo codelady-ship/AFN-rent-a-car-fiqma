@@ -40,6 +40,8 @@ Dates are calendar days `YYYY-MM-DD` in Baku time. A booking covers `[from, to)`
 
 ## Admin (Bearer token with role `admin`)
 
+The public **demo admin** `admin@afn.demo` / `demo12345` (role `demo`, created by the seed; `DEMO_ADMIN=off` removes it) can call every `GET` below, but any write gets **403** with a `Demo rejim: …` message, and names, e-mails, phones, notes and message texts in `/admin/bookings` and `/admin/messages` are masked for it.
+
 | Method | Path | Notes |
 | --- | --- | --- |
 | GET | `/admin/stats` | Cars, customers, new messages, bookings by status, revenue of confirmed/completed bookings, booked days |
@@ -60,4 +62,4 @@ Dates are calendar days `YYYY-MM-DD` in Baku time. A booking covers `[from, to)`
 
 ## Environment
 
-See [`backend/.env.example`](../backend/.env.example): `PORT`, `MONGODB_URI`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CORS_ORIGINS`, `SEED_ON_START`, `AUTH_RATE_LIMIT`, `PUBLIC_RATE_LIMIT`.
+See [`backend/.env.example`](../backend/.env.example): `PORT`, `MONGODB_URI`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CORS_ORIGINS`, `SEED_ON_START`, `AUTH_RATE_LIMIT`, `PUBLIC_RATE_LIMIT`, `DEMO_ADMIN` (`off` removes the public read-only demo admin).

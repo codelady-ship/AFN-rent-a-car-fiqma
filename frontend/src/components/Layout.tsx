@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { asset } from "../lib/shared";
 import { useApp } from "../lib/store";
+import { canAdmin } from "../lib/types";
 import SiteFooter from "./SiteFooter";
 
 export function DemoBanner() {
@@ -61,7 +62,7 @@ export default function Layout() {
                 {l.label}
               </NavLink>
             ))}
-            {session?.user.role === "admin" && (
+            {canAdmin(session?.user) && (
               <NavLink to="/admin" className={navCls}>
                 Admin
               </NavLink>
