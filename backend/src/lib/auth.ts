@@ -72,12 +72,14 @@ export const requireAdmin: RequestHandler = (req, res, next) =>
 
 /** The demo admin sees the shape of the data, not the customers behind it. */
 export const isDemo = (req: { user?: AuthUser }) => req.user?.role === "demo";
-export function maskPerson<T extends { name?: unknown; email?: unknown; phone?: unknown; note?: unknown; message?: unknown }>(row: T): T {
+export function maskPerson<T extends { name?: unknown; email?: unknown; phone?: unknown; note?: unknown; subject?: unknown; message?: unknown }>(row: T): T {
   const out: Record<string, unknown> = { ...row };
   if (typeof out.name === "string") out.name = out.name.split(/\s+/).map((w) => w.charAt(0) + "***").join(" ");
   if (typeof out.email === "string" && out.email) out.email = out.email.replace(/^(.)[^@]*@/, "$1***@");
   if (typeof out.phone === "string") out.phone = out.phone.replace(/\d(?=(?:\D*\d){2})/g, "*");
   if (out.note) out.note = "(demo: gizlədilib)";
+  // Free text a visitor typed: a subject can carry a name or a phone number just like the message.
+  if (out.subject) out.subject = "(demo: mövzu gizlədilib)";
   if (out.message) out.message = "(demo: mesajın mətni gizlədilib)";
   return out as T;
 }

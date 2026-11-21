@@ -109,7 +109,9 @@ describe("contact form", () => {
 
 describe("demo admin (public, read-only)", () => {
   it("is seeded, can read every admin list, cannot write, and sees no personal data", async () => {
-    await request(app).post("/api/contact").send({ name: "Nigar Quliyeva", email: "nigar@test.local", phone: "+994 50 123 45 67", message: "Salam, həftə sonu üçün maşın lazımdır." });
+    await request(app)
+      .post("/api/contact")
+      .send({ name: "Nigar Quliyeva", email: "nigar@test.local", phone: "+994 50 123 45 67", subject: "Nigar Quliyeva, 050 123 45 67", message: "Salam, həftə sonu üçün maşın lazımdır." });
     const login = await request(app).post("/api/auth/login").send({ email: "admin@afn.demo", password: "demo12345" });
     expect(login.status).toBe(200);
     expect(login.body.user.role).toBe("demo");
@@ -124,6 +126,12 @@ describe("demo admin (public, read-only)", () => {
     expect(nigar.email).toBe("n***@test.local");
     expect(nigar.phone).toBe("+*** ** *** ** 67");
     expect(nigar.message).not.toMatch(/həftə/);
+    expect(nigar.subject).toBe("(demo: mövzu gizlədilib)");
+    // no admin list gives the demo role anything the visitor typed
+    for (const path of ["/api/admin/stats", "/api/admin/bookings", "/api/reservations", "/api/admin/messages", "/api/admin/locations", "/api/admin/reviews"]) {
+      const text = JSON.stringify((await request(app).get(path).set(demo)).body);
+      for (const secret of ["Nigar Quliyeva", "Quliyeva", "nigar@", "123 45 67", "1234567", "həftə sonu"]) expect(text, `${path} leaks "${secret}"`).not.toContain(secret);
+    }
 
     const cars = (await request(app).get("/api/cars")).body;
     const writes = [
@@ -143,6 +151,6 @@ describe("demo admin (public, read-only)", () => {
     expect((await request(app).get("/api/bookings/mine").set(demo)).status).toBe(403);
     // the real admin still has full rights and sees the real data
     const real = (await request(app).get("/api/admin/messages").set({ Authorization: `Bearer ${admin}` })).body;
-    expect(real.some((m: { name: string }) => m.name === "Nigar Quliyeva")).toBe(true);
+    expect(real.some((m: { name: string; subject: string }) => m.name === "Nigar Quliyeva" && m.subject === "Nigar Quliyeva, 050 123 45 67")).toBe(true);
   });
 });

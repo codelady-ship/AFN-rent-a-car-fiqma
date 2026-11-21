@@ -86,7 +86,8 @@ export default function Layout() {
           </nav>
         </div>
       </header>
-      <DemoBanner />
+      {/* The admin page has its own demo note (with the reset button); one note is enough there. */}
+      {pathname === "/admin" || pathname.startsWith("/admin/") ? null : <DemoBanner />}
       <main id="main" className="min-h-[60vh]">
         <Outlet />
       </main>

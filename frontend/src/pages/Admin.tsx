@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { CATEGORIES, STATUS_LABEL, TRANSITIONS, azn, prettyDay } from "../lib/shared";
@@ -14,6 +14,81 @@ const TABS: [Tab, string][] = [
   ["cars", "Avtomobillər"],
   ["messages", "Mesajlar"],
 ];
+
+const CONFIRM_MS = 6000;
+
+/**
+ * Two-step delete inside the page. The portfolio shows this admin in a sandboxed iframe without
+ * allow-modals, where window.confirm() / alert() / prompt() are ignored and return at once, so no
+ * native dialog may be used here. "Sil" turns into "Əminsən? Sil / Ləğv et" for a few seconds;
+ * Escape or "Ləğv et" backs out, and focus follows the buttons so it works from the keyboard.
+ */
+function ConfirmDelete({ what, onConfirm }: { what: string; onConfirm: () => void }) {
+  const [armed, setArmed] = useState(false);
+  const first = useRef<HTMLButtonElement>(null);
+  const yes = useRef<HTMLButtonElement>(null);
+  const moveFocus = useRef(false);
+
+  // Asked from the keyboard or by click: move focus to the button that replaced the one in use.
+  useEffect(() => {
+    if (!moveFocus.current) return;
+    moveFocus.current = false;
+    (armed ? yes : first).current?.focus();
+  }, [armed]);
+  // Not answered: go back to "Sil" quietly (focus only moves if it was on the question).
+  useEffect(() => {
+    if (!armed) return;
+    const t = window.setTimeout(() => {
+      moveFocus.current = !!yes.current?.parentElement?.contains(document.activeElement);
+      setArmed(false);
+    }, CONFIRM_MS);
+    return () => window.clearTimeout(t);
+  }, [armed]);
+
+  const set = (next: boolean) => {
+    moveFocus.current = true;
+    setArmed(next);
+  };
+
+  if (!armed)
+    return (
+      <button ref={first} type="button" className="btn btn-ghost" aria-label={`${what}: sil`} onClick={() => set(true)}>
+        Sil
+      </button>
+    );
+  return (
+    <span
+      role="group"
+      aria-label={`${what}: silmək təsdiqi`}
+      className="inline-flex flex-wrap items-center gap-2"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          set(false);
+        }
+      }}
+    >
+      <span className="font-semibold" role="status">
+        Əminsən?
+      </span>
+      <button
+        ref={yes}
+        type="button"
+        className="btn btn-dark"
+        aria-label={`${what}: bəli, sil`}
+        onClick={() => {
+          set(false);
+          onConfirm();
+        }}
+      >
+        Sil
+      </button>
+      <button type="button" className="btn btn-ghost" onClick={() => set(false)}>
+        Ləğv et
+      </button>
+    </span>
+  );
+}
 
 export default function Admin() {
   useMeta("Admin panel", undefined, { noindex: true });
@@ -80,8 +155,8 @@ export default function Admin() {
       say(d || (err as Error).message);
     }
   };
+  // Confirmation happens in the page (ConfirmDelete below), never with window.confirm().
   const removeCar = async (c: Car) => {
-    if (!window.confirm(`${c.model} silinsin?`)) return;
     try {
       await api.admin.deleteCar(token, c.id);
       say("Silindi");
@@ -99,9 +174,9 @@ export default function Admin() {
     }
   };
   const delMsg = async (m: Message) => {
-    if (!window.confirm("Mesaj silinsin?")) return;
     try {
       await api.admin.deleteMessage(token, m.id);
+      say("Mesaj silindi");
       refresh();
     } catch (e) {
       fail(e);
@@ -282,9 +357,7 @@ export default function Admin() {
                       <button type="button" className="btn btn-ghost" onClick={() => setEditing(c)}>
                         Redaktə
                       </button>
-                      <button type="button" className="btn btn-ghost" onClick={() => removeCar(c)}>
-                        Sil
-                      </button>
+                      <ConfirmDelete what={c.model} onConfirm={() => removeCar(c)} />
                     </td>
                   </tr>
                 ))}
@@ -317,9 +390,7 @@ export default function Admin() {
                       Arxivlə
                     </button>
                   )}
-                  <button type="button" className="btn btn-ghost" onClick={() => delMsg(m)}>
-                    Sil
-                  </button>
+                  <ConfirmDelete what={`${m.name} mesajı`} onConfirm={() => delMsg(m)} />
                 </div>
               </li>
             ))}
