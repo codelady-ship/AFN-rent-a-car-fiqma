@@ -58,7 +58,7 @@ npm run dev        # http://localhost:5173
 npm test
 ```
 
-Demo admin in demo mode: `admin@afn.demo` / `demo12345` (only exists in the browser demo).
+Demo admin: the **Demo admin kimi daxil ol** button on `/daxil-ol` (or `admin@afn.demo` / `demo12345`). With the live API it is a read-only role seeded by `backend/src/seed.ts` (writes get 403, customer data is masked); when the API cannot be reached it opens the admin panel on the in-browser sample data (changes stay in this browser, "Sıfırla" resets them). The admin pages (`/admin`, `/daxil-ol`) may be framed by the portfolio (`frame-ancestors` in `frontend/vercel.json`); every other page keeps `X-Frame-Options: DENY`.
 
 Full stack (needs MongoDB: a free Atlas cluster or a local `mongod`):
 

@@ -2,7 +2,7 @@
 // Used when VITE_API_URL is not set (for example on GitHub Pages) or the API cannot be reached.
 // Data the visitor creates is kept only in this browser (localStorage).
 import { ApiError, type Booking, type BookingInput, type Car, type CarFilters, type Location, type Message, type Review, type Session, type Stats, type User } from "./types";
-import { DESCRIPTIONS, EXTRAS, FEATURED, LOCATIONS, MAX_RENTAL_DAYS, REVIEWS, TRANSITIONS, dayDiff, daysBetween, isIsoDay, seedData, todayInBaku } from "./shared";
+import { DESCRIPTIONS, EXTRAS, FEATURED, LOCATIONS, MAX_RENTAL_DAYS, REVIEWS, TRANSITIONS, addDays, dayDiff, daysBetween, isIsoDay, seedData, todayInBaku } from "./shared";
 
 export const DEMO_ADMIN = { email: "admin@afn.demo", password: "demo12345" };
 
@@ -14,7 +14,7 @@ type Store = {
   cars: Car[];
 };
 
-const KEY = "afn-demo-v1";
+const KEY = "afn-demo-v2";
 const uid = () => Math.random().toString(16).slice(2, 10) + Date.now().toString(16);
 
 const seedCars = (): Car[] =>
@@ -22,12 +22,37 @@ const seedCars = (): Car[] =>
 
 export const demoLocations: Location[] = LOCATIONS.map((l, i) => ({ ...l, id: "loc-" + (i + 1), active: true }));
 
+// A few made-up bookings and messages so the demo admin panel is not empty (fictional people, sample numbers).
+const SAMPLE_BOOKINGS: [string, number, number, Booking["status"], string, string][] = [
+  ["Ekonom", -12, -8, "completed", "Aysel Məmmədova", "+994 50 111 22 33"],
+  ["Biznes", -3, 2, "confirmed", "Rauf Həsənli", "+994 55 222 33 44"],
+  ["Krossover və SUV", 12, 15, "pending", "Leyla Əliyeva", "+994 70 333 44 55"],
+  ["Premium", 20, 22, "pending", "Tural Quliyev", "+994 51 444 55 66"],
+  ["Ekonom", 25, 27, "cancelled", "Nərmin Babayeva", "+994 77 555 66 77"],
+];
+const SAMPLE_MESSAGES: Omit<Message, "id" | "createdAt">[] = [
+  { name: "Kamran İsmayılov", email: "kamran@example.com", subject: "Toy üçün avtomobil", message: "Salam, 20 dekabr üçün ağ rəngli biznes klass avtomobil lazımdır. Sürücü ilə mümkündür?", status: "new" },
+  { name: "Səbinə Rəhimova", email: "sebine@example.com", phone: "+994 50 000 11 22", message: "Hava limanına çatdırılma neçəyə başa gəlir?", status: "read" },
+];
+function sampleBookings(cars: Car[]): Store["bookings"] {
+  const today = todayInBaku();
+  return SAMPLE_BOOKINGS.flatMap(([category, a, b, status, name, phone], i) => {
+    const car = cars.filter((c) => c.category === category)[i % 2] ?? cars[i];
+    if (!car) return [];
+    const from = addDays(today, a);
+    const to = addDays(today, b);
+    const days = dayDiff(from, to);
+    const total = car.pricePerDay * days;
+    return [{ id: "b" + i, reference: "AFN-DEMO0" + (i + 1), car: car.id, carModel: car.model, from, to, days, name, phone, status, pricePerDay: car.pricePerDay, carTotal: total, extras: [], extrasTotal: 0, deliveryFee: 0, total, place: demoLocations[0].name, createdAt: addDays(today, a - 5) + "T10:00:00.000Z" }];
+  });
+}
+
 function fresh(): Store {
   const cars = seedCars();
   return {
     users: [{ id: "u-admin", name: "AFN admin", email: DEMO_ADMIN.email, password: DEMO_ADMIN.password, role: "admin" }],
-    bookings: [],
-    messages: [],
+    bookings: sampleBookings(cars),
+    messages: SAMPLE_MESSAGES.map((m, i) => ({ ...m, id: "m" + i, createdAt: addDays(todayInBaku(), -i) + "T09:00:00.000Z" })),
     reviews: REVIEWS.flatMap(([model, authorName, rating, comment], i) => {
       const car = cars.find((c) => c.model === model);
       return car ? [{ id: "r" + i, car: car.id, authorName, rating, comment }] : [];

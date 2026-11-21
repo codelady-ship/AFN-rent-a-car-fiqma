@@ -1,6 +1,6 @@
 import { Router, type RequestHandler } from "express";
 import mongoose from "mongoose";
-import { requireAdmin } from "../lib/auth";
+import { isDemo, maskPerson, requireAdmin } from "../lib/auth";
 import { HttpError, validate } from "../lib/errors";
 import { publicWriteLimiter } from "../lib/limits";
 import { Booking, BookingSlot, Car, Location, Message, Review, User } from "../models";
@@ -63,7 +63,8 @@ admin.delete("/locations/:id", requireAdmin, async (req, res) => {
 const listBookings: RequestHandler = async (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
   const filter = status && ["pending", "confirmed", "completed", "cancelled"].includes(status) ? { status } : {};
-  res.json(await Booking.find(filter).sort({ createdAt: -1 }).limit(200));
+  const rows = await Booking.find(filter).sort({ createdAt: -1 }).limit(200);
+  res.json(isDemo(req) ? rows.map((r) => maskPerson(r.toJSON())) : rows);
 };
 const patchBooking: RequestHandler = async (req, res) => {
   res.json(await setStatus(String(req.params.id), req.body.status));
@@ -78,7 +79,8 @@ admin.patch("/reservations/:id", requireAdmin, validate(statusSchema), patchBook
 admin.get("/admin/messages", requireAdmin, async (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
   const filter = status && ["new", "read", "archived"].includes(status) ? { status } : {};
-  res.json(await Message.find(filter).sort({ createdAt: -1 }).limit(200));
+  const rows = await Message.find(filter).sort({ createdAt: -1 }).limit(200);
+  res.json(isDemo(req) ? rows.map((r) => maskPerson(r.toJSON())) : rows);
 });
 admin.patch("/admin/messages/:id", requireAdmin, validate(messageStatusSchema), async (req, res) => {
   const msg = await Message.findByIdAndUpdate(oid(String(req.params.id)), { status: req.body.status }, { new: true });

@@ -5,7 +5,8 @@ import { User } from "../models";
 import { config } from "./config";
 import { HttpError } from "./errors";
 
-export type Role = "customer" | "admin";
+/** "demo" is the public read-only admin used by the portfolio: it can open every admin page but cannot change anything. */
+export type Role = "customer" | "admin" | "demo";
 export type AuthUser = { id: string; role: Role; name: string; email: string };
 
 declare module "express-serve-static-core" {
@@ -14,7 +15,7 @@ declare module "express-serve-static-core" {
   }
 }
 
-const TTL: Record<Role, string> = { customer: "7d", admin: "8h" };
+const TTL: Record<Role, string> = { customer: "7d", admin: "8h", demo: "2h" };
 
 export const hashPassword = (pw: string) => bcrypt.hash(pw, 10);
 export const checkPassword = (pw: string, hash: string) => bcrypt.compare(pw, hash);
@@ -31,7 +32,7 @@ function readToken(header: string | undefined): AuthUser | null {
   if (type !== "Bearer" || !token || !config.jwtSecret) return null;
   try {
     const p = jwt.verify(token, config.jwtSecret) as jwt.JwtPayload;
-    if (!p.sub || (p.role !== "customer" && p.role !== "admin")) return null;
+    if (!p.sub || !["customer", "admin", "demo"].includes(p.role)) return null;
     return { id: String(p.sub), role: p.role, name: String(p.name || ""), email: String(p.email || "") };
   } catch {
     return null;
@@ -55,7 +56,51 @@ export const requireAuth =
     next();
   };
 
-export const requireAdmin = requireAuth("admin");
+export const DEMO_READ_ONLY = "Demo rejim: admin paneli yalnız baxış üçündür, dəyişikliklər saxlanılmır.";
+
+/**
+ * Admin routes: real admins get full rights; the demo admin may only read (GET/HEAD).
+ * Any write from the demo role is refused with 403 and a message the admin page shows as a toast.
+ */
+const adminOrDemo = requireAuth("admin", "demo");
+export const requireAdmin: RequestHandler = (req, res, next) =>
+  adminOrDemo(req, res, (err?: unknown) => {
+    if (err) return next(err);
+    if (req.user!.role === "demo" && req.method !== "GET" && req.method !== "HEAD") return next(new HttpError(403, DEMO_READ_ONLY));
+    next();
+  });
+
+/** The demo admin sees the shape of the data, not the customers behind it. */
+export const isDemo = (req: { user?: AuthUser }) => req.user?.role === "demo";
+export function maskPerson<T extends { name?: unknown; email?: unknown; phone?: unknown; note?: unknown; subject?: unknown; message?: unknown }>(row: T): T {
+  const out: Record<string, unknown> = { ...row };
+  if (typeof out.name === "string") out.name = out.name.split(/\s+/).map((w) => w.charAt(0) + "***").join(" ");
+  if (typeof out.email === "string" && out.email) out.email = out.email.replace(/^(.)[^@]*@/, "$1***@");
+  if (typeof out.phone === "string") out.phone = out.phone.replace(/\d(?=(?:\D*\d){2})/g, "*");
+  if (out.note) out.note = "(demo: gizlədilib)";
+  // Free text a visitor typed: a subject can carry a name or a phone number just like the message.
+  if (out.subject) out.subject = "(demo: mövzu gizlədilib)";
+  if (out.message) out.message = "(demo: mesajın mətni gizlədilib)";
+  return out as T;
+}
+
+/** The public demo admin (read-only, see requireAdmin). The password is public by design; DEMO_ADMIN=off removes the account. */
+export const DEMO_ADMIN = { email: "admin@afn.demo", password: "demo12345" };
+export async function ensureDemoAdmin() {
+  if (process.env.DEMO_ADMIN === "off") {
+    await User.deleteOne({ email: DEMO_ADMIN.email, role: "demo" });
+    return "off";
+  }
+  const existing = await User.findOne({ email: DEMO_ADMIN.email }).select("+passwordHash");
+  if (existing && existing.role !== "demo") return "skipped (e-mail used by another account)";
+  if (existing && (await checkPassword(DEMO_ADMIN.password, existing.passwordHash))) return "ok";
+  await User.updateOne(
+    { email: DEMO_ADMIN.email },
+    { $set: { role: "demo", passwordHash: await hashPassword(DEMO_ADMIN.password) }, $setOnInsert: { name: "Demo admin", email: DEMO_ADMIN.email } },
+    { upsert: true }
+  );
+  return "ok";
+}
 
 /** The admin account comes from ADMIN_EMAIL / ADMIN_PASSWORD; it is created or updated on start. */
 export async function ensureAdmin() {

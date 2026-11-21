@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { DEMO_ADMIN } from "../lib/demo";
 import { useApp, useMeta } from "../lib/store";
-import { ApiError } from "../lib/types";
+import { ApiError, canAdmin } from "../lib/types";
 
 export default function Account() {
   useMeta("Daxil ol və ya qeydiyyat", "AFN rent a car hesabı: rezervasiyalarınızı izləyin və ləğv edin.", { noindex: true });
@@ -28,10 +28,25 @@ export default function Account() {
       setSession(s);
       say(`Xoş gəldiniz, ${s.user.name}`);
       const next = params.get("next");
-      nav(next && next.startsWith("/") && !next.startsWith("//") ? next : s.user.role === "admin" ? "/admin" : "/hesab");
+      nav(next && next.startsWith("/") && !next.startsWith("//") ? next : canAdmin(s.user) ? "/admin" : "/hesab");
     } catch (err) {
       if (err instanceof ApiError && err.details.length) setErrors(Object.fromEntries(err.details.map((d) => [d.field, d.message])));
       setMsg(err instanceof ApiError && err.message === "Validation failed" ? "Formada səhvlər var." : (err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const demoAdmin = async () => {
+    setMsg("");
+    setBusy(true);
+    try {
+      const s = await api.demoAdmin();
+      setSession(s);
+      say(s.user.role === "demo" ? "Demo admin: yalnız baxış, dəyişikliklər saxlanılmır" : "Demo admin: nümunə məlumat, dəyişikliklər yalnız bu brauzerdə");
+      nav("/admin");
+    } catch (err) {
+      setMsg((err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -83,10 +98,16 @@ export default function Account() {
           {busy ? "Gözləyin…" : mode === "login" ? "Daxil ol" : "Hesab yarat"}
         </button>
       </form>
-      {demo && (
-        <p className="mt-4 rounded-lg bg-paper p-3 text-sm">
-          Demo rejimdə admin paneli üçün: <span translate="no">{DEMO_ADMIN.email}</span> / <span translate="no">{DEMO_ADMIN.password}</span>. Müştəri hesabı yaratmaq üçün “Hesab yarat” seçin.
-        </p>
+      {mode === "login" && (
+        <div className="card mt-4 grid gap-2 p-4">
+          <button type="button" className="btn btn-dark" disabled={busy} onClick={demoAdmin}>
+            Demo admin kimi daxil ol
+          </button>
+          <p className="m-0 text-sm text-muted">
+            Portfolio üçün açıq demo hesab: <span translate="no">{DEMO_ADMIN.email}</span> / <span translate="no">{DEMO_ADMIN.password}</span>.{" "}
+            {demo ? "API qoşulmayıb: admin paneli brauzerdəki demo məlumatla işləyir." : "Yalnız baxış: dəyişikliklər saxlanılmır, müştəri məlumatları gizlədilir."}
+          </p>
+        </div>
       )}
     </div>
   );

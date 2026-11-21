@@ -61,7 +61,7 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, trim: true, lowercase: true, maxlength: 120 },
     phone: { type: String, trim: true, maxlength: 30, default: "" },
     passwordHash: { type: String, required: true, select: false },
-    role: { type: String, enum: ["customer", "admin"], default: "customer" },
+    role: { type: String, enum: ["customer", "admin", "demo"], default: "customer" },
   },
   {
     timestamps: true,

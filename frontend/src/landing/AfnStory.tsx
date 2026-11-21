@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { api, isDemo } from "../lib/api";
 import { CATEGORIES, EXTRAS, asset } from "../lib/shared";
 import { useApp } from "../lib/store";
-import type { Car } from "../lib/types";
+import { canAdmin, type Car } from "../lib/types";
 import { demo } from "../lib/demo";
 import {
   FIELD,
@@ -730,7 +730,7 @@ export default function AfnStory({ height = "100svh" }: { height?: string }) {
   };
 
   const fly = KIT_LOOK[PICK_KEYS[PICK_KEYS.length - 1]];
-  const accountLink = session ? (session.user.role === "admin" ? "/admin" : "/hesab") : "/daxil-ol";
+  const accountLink = session ? (canAdmin(session.user) ? "/admin" : "/hesab") : "/daxil-ol";
 
   return (
     <div

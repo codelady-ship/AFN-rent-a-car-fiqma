@@ -1,10 +1,11 @@
-// Fills empty collections with the AFN demo data (src/data/rentAcar.json) and makes sure the admin account exists.
+// Fills empty collections with the AFN demo data (src/data/rentAcar.json) and makes sure the admin account
+// and the public read-only demo admin (admin@afn.demo / demo12345, role "demo"; DEMO_ADMIN=off removes it) exist.
 // Usage: npm run seed            -> inserts only into empty collections
 //        npm run seed -- --reset -> wipes slides, categories, cars, locations and demo reviews first (bookings are kept)
 import mongoose, { type Model } from "mongoose";
 import { DESCRIPTIONS, FEATURED, LOCATIONS, REVIEWS } from "./data/demo";
 import data from "./data/rentAcar.json";
-import { ensureAdmin } from "./lib/auth";
+import { ensureAdmin, ensureDemoAdmin } from "./lib/auth";
 import { config } from "./lib/config";
 import { connect } from "./lib/db";
 import { Car, CategoryModel, Location, Review, Slide, ensureIndexes } from "./models";
@@ -39,6 +40,7 @@ export async function seed({ reset = false } = {}) {
     out.reviews = rows.length;
   } else out.reviews = "skipped (not empty)";
   out.admin = await ensureAdmin();
+  out.demoAdmin = await ensureDemoAdmin();
   return out;
 }
 

@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { CATEGORIES, STATUS_LABEL, TRANSITIONS, azn, prettyDay } from "../lib/shared";
 import { useApp, useMeta } from "../lib/store";
-import { ApiError, type Booking, type Car, type Message, type Stats } from "../lib/types";
+import { demo as sandbox } from "../lib/demo";
+import { ApiError, canAdmin, type Booking, type Car, type Message, type Stats } from "../lib/types";
 import { StatusBadge } from "./MyBookings";
 
 type Tab = "panel" | "bookings" | "cars" | "messages";
@@ -14,9 +15,84 @@ const TABS: [Tab, string][] = [
   ["messages", "Mesajlar"],
 ];
 
+const CONFIRM_MS = 6000;
+
+/**
+ * Two-step delete inside the page. The portfolio shows this admin in a sandboxed iframe without
+ * allow-modals, where window.confirm() / alert() / prompt() are ignored and return at once, so no
+ * native dialog may be used here. "Sil" turns into "Əminsən? Sil / Ləğv et" for a few seconds;
+ * Escape or "Ləğv et" backs out, and focus follows the buttons so it works from the keyboard.
+ */
+function ConfirmDelete({ what, onConfirm }: { what: string; onConfirm: () => void }) {
+  const [armed, setArmed] = useState(false);
+  const first = useRef<HTMLButtonElement>(null);
+  const yes = useRef<HTMLButtonElement>(null);
+  const moveFocus = useRef(false);
+
+  // Asked from the keyboard or by click: move focus to the button that replaced the one in use.
+  useEffect(() => {
+    if (!moveFocus.current) return;
+    moveFocus.current = false;
+    (armed ? yes : first).current?.focus();
+  }, [armed]);
+  // Not answered: go back to "Sil" quietly (focus only moves if it was on the question).
+  useEffect(() => {
+    if (!armed) return;
+    const t = window.setTimeout(() => {
+      moveFocus.current = !!yes.current?.parentElement?.contains(document.activeElement);
+      setArmed(false);
+    }, CONFIRM_MS);
+    return () => window.clearTimeout(t);
+  }, [armed]);
+
+  const set = (next: boolean) => {
+    moveFocus.current = true;
+    setArmed(next);
+  };
+
+  if (!armed)
+    return (
+      <button ref={first} type="button" className="btn btn-ghost" aria-label={`${what}: sil`} onClick={() => set(true)}>
+        Sil
+      </button>
+    );
+  return (
+    <span
+      role="group"
+      aria-label={`${what}: silmək təsdiqi`}
+      className="inline-flex flex-wrap items-center gap-2"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          set(false);
+        }
+      }}
+    >
+      <span className="font-semibold" role="status">
+        Əminsən?
+      </span>
+      <button
+        ref={yes}
+        type="button"
+        className="btn btn-dark"
+        aria-label={`${what}: bəli, sil`}
+        onClick={() => {
+          set(false);
+          onConfirm();
+        }}
+      >
+        Sil
+      </button>
+      <button type="button" className="btn btn-ghost" onClick={() => set(false)}>
+        Ləğv et
+      </button>
+    </span>
+  );
+}
+
 export default function Admin() {
   useMeta("Admin panel", undefined, { noindex: true });
-  const { session, setSession, say } = useApp();
+  const { session, setSession, say, demo } = useApp();
   const [tab, setTab] = useState<Tab>("panel");
   const [stats, setStats] = useState<Stats | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -24,14 +100,16 @@ export default function Admin() {
   const [cars, setCars] = useState<Car[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [editing, setEditing] = useState<Partial<Car> | null>(null);
-  const token = session?.user.role === "admin" ? session.token : "";
+  const token = canAdmin(session?.user) ? session!.token : "";
+  const readOnly = session?.user.role === "demo";
 
   const fail = useCallback(
     (e: unknown) => {
-      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) setSession(null);
+      // The read-only demo admin gets 403 for every write: show the message, keep the session.
+      if (e instanceof ApiError && (e.status === 401 || (e.status === 403 && !readOnly))) setSession(null);
       say((e as Error).message);
     },
-    [say, setSession]
+    [say, setSession, readOnly]
   );
   const refresh = useCallback(() => {
     if (!token) return;
@@ -43,7 +121,7 @@ export default function Admin() {
   useEffect(refresh, [refresh]);
 
   if (!session) return <Navigate to="/daxil-ol?next=/admin" replace />;
-  if (session.user.role !== "admin")
+  if (!canAdmin(session.user))
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold">Bu səhifə yalnız admin üçündür</h1>
@@ -77,8 +155,8 @@ export default function Admin() {
       say(d || (err as Error).message);
     }
   };
+  // Confirmation happens in the page (ConfirmDelete below), never with window.confirm().
   const removeCar = async (c: Car) => {
-    if (!window.confirm(`${c.model} silinsin?`)) return;
     try {
       await api.admin.deleteCar(token, c.id);
       say("Silindi");
@@ -96,9 +174,9 @@ export default function Admin() {
     }
   };
   const delMsg = async (m: Message) => {
-    if (!window.confirm("Mesaj silinsin?")) return;
     try {
       await api.admin.deleteMessage(token, m.id);
+      say("Mesaj silindi");
       refresh();
     } catch (e) {
       fail(e);
@@ -121,6 +199,27 @@ export default function Admin() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="m-0 text-3xl font-bold">Admin panel</h1>
+      {(demo || readOnly) && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-paper p-3 text-sm" role="note">
+          <p className="m-0 flex-1 basis-60">
+            <strong className="text-ink">Demo rejim</strong> — dəyişikliklər saxlanılmır.{" "}
+            {demo ? "Məlumat nümunədir və yalnız bu brauzerdə dəyişir." : "Demo admin yalnız baxa bilər; müştəri məlumatları gizlədilib."}
+          </p>
+          {demo && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => {
+                sandbox.reset();
+                say("Demo məlumatları sıfırlandı");
+                refresh();
+              }}
+            >
+              Sıfırla
+            </button>
+          )}
+        </div>
+      )}
       <div className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Bölmələr">
         {TABS.map(([k, label]) => (
           <button key={k} type="button" role="tab" id={`tab-${k}`} aria-selected={tab === k} aria-controls={`panel-${k}`} className="chip" aria-pressed={tab === k} onClick={() => setTab(k)}>
@@ -258,9 +357,7 @@ export default function Admin() {
                       <button type="button" className="btn btn-ghost" onClick={() => setEditing(c)}>
                         Redaktə
                       </button>
-                      <button type="button" className="btn btn-ghost" onClick={() => removeCar(c)}>
-                        Sil
-                      </button>
+                      <ConfirmDelete what={c.model} onConfirm={() => removeCar(c)} />
                     </td>
                   </tr>
                 ))}
@@ -293,9 +390,7 @@ export default function Admin() {
                       Arxivlə
                     </button>
                   )}
-                  <button type="button" className="btn btn-ghost" onClick={() => delMsg(m)}>
-                    Sil
-                  </button>
+                  <ConfirmDelete what={`${m.name} mesajı`} onConfirm={() => delMsg(m)} />
                 </div>
               </li>
             ))}

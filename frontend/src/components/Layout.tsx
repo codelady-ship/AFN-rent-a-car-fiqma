@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { asset } from "../lib/shared";
 import { useApp } from "../lib/store";
+import { canAdmin } from "../lib/types";
 import SiteFooter from "./SiteFooter";
 
 export function DemoBanner() {
@@ -61,7 +62,7 @@ export default function Layout() {
                 {l.label}
               </NavLink>
             ))}
-            {session?.user.role === "admin" && (
+            {canAdmin(session?.user) && (
               <NavLink to="/admin" className={navCls}>
                 Admin
               </NavLink>
@@ -85,7 +86,8 @@ export default function Layout() {
           </nav>
         </div>
       </header>
-      <DemoBanner />
+      {/* The admin page has its own demo note (with the reset button); one note is enough there. */}
+      {pathname === "/admin" || pathname.startsWith("/admin/") ? null : <DemoBanner />}
       <main id="main" className="min-h-[60vh]">
         <Outlet />
       </main>

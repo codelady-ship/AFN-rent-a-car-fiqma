@@ -38,8 +38,9 @@ jobs:
       - run: npm run build
       # SPA routes: GitHub Pages serves 404.html for unknown paths
       - run: cp dist/index.html dist/404.html
-      # public routes answer 200 instead of the 404 fallback (Pages serves /park from park.html)
-      - run: for r in park rezervasiya elaqe; do cp dist/index.html "dist/$r.html"; done
+      # these routes answer 200 instead of the 404 fallback (Pages serves /park from park.html);
+      # /admin and /daxil-ol are the portfolio's admin demo links (Pages sends no X-Frame-Options, so they can be framed)
+      - run: for r in park rezervasiya elaqe admin daxil-ol; do cp dist/index.html "dist/$r.html"; done
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
