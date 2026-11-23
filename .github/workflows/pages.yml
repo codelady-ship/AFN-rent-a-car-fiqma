@@ -36,7 +36,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      # npm run build also writes 404.html and a copy of index.html per route (park.html, park/1.html, admin.html,
+      # npm run build also writes 404.html and a copy of index.html per route (park.html, park/demo-1.html, admin.html,
       # ...) with that route's meta tags, so deep links answer 200 (see prerenderRoutes in frontend/vite.config.ts).
       # /admin and /daxil-ol are the portfolio's admin demo links (Pages sends no X-Frame-Options, so they can be framed).
       - uses: actions/upload-pages-artifact@v3

@@ -5,6 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import seed from "../backend/src/data/rentAcar.json";
+import { demoCarPath, pageFile } from "./src/lib/prerender";
 import { PAGE_META, carMeta, fullTitle, type PageMeta } from "./src/lib/routeMeta";
 
 // VITE_BASE is "/" on Vercel and "/AFN-rent-a-car-fiqma/" for the GitHub Pages build.
@@ -86,7 +87,8 @@ function routeHtml(html: string, path: string, meta: PageMeta, image?: string) {
 /**
  * GitHub Pages has no rewrites: an unknown path gets 404.html with HTTP status 404, so SPA deep links used to
  * answer 404 (the page still rendered, but crawlers and link previews saw an error). This writes a copy of
- * index.html for every known route, including each car page (/park/1 → park/1.html), with that route's own
+ * index.html for every known route, including each demo car page (/park/demo-1 → park/demo-1.html: the Pages build
+ * runs on the in-browser demo fleet), with that route's own
  * meta tags. 404.html stays as the fallback for paths that really do not exist.
  */
 function prerenderRoutes(): Plugin {
@@ -115,7 +117,8 @@ function prerenderRoutes(): Plugin {
       // park/ is also a folder now (the car pages): park/index.html answers /park/ if Pages redirects /park there
       write("park/index.html", routeHtml(html, "/park", PAGE_META.park));
       for (const car of seed.cars) {
-        write(`park/${car.id}.html`, routeHtml(html, `/park/${car.id}`, carMeta(car), site + car.image));
+        const path = demoCarPath(car.id);
+        write(pageFile(path), routeHtml(html, path, carMeta(car), site + car.image));
       }
       write("404.html", routeHtml(html, "/404", PAGE_META.notFound));
     },

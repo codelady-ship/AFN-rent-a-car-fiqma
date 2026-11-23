@@ -17,8 +17,11 @@ type Store = {
 const KEY = "afn-demo-v2";
 const uid = () => Math.random().toString(16).slice(2, 10) + Date.now().toString(16);
 
+/** Demo car ids are the seed ids with this prefix (/park/demo-1). The build prerenders those car pages too. */
+export const DEMO_CAR_PREFIX = "demo-";
+
 const seedCars = (): Car[] =>
-  seedData.cars.map((c) => ({ ...c, id: "demo-" + c.id, featured: FEATURED.includes(c.model), description: DESCRIPTIONS[c.category] ?? "" }));
+  seedData.cars.map((c) => ({ ...c, id: DEMO_CAR_PREFIX + c.id, featured: FEATURED.includes(c.model), description: DESCRIPTIONS[c.category] ?? "" }));
 
 export const demoLocations: Location[] = LOCATIONS.map((l, i) => ({ ...l, id: "loc-" + (i + 1), active: true }));
 
