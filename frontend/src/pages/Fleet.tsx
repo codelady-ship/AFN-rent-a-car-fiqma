@@ -3,13 +3,14 @@ import { useSearchParams } from "react-router-dom";
 import CarCard from "../components/CarCard";
 import { api } from "../lib/api";
 import { CATEGORIES, addDays, todayInBaku } from "../lib/shared";
-import { useMeta } from "../lib/store";
+import { usePageMeta } from "../lib/store";
+import { PAGE_META } from "../lib/routeMeta";
 import type { Car, CarFilters } from "../lib/types";
 
 const num = (v: string | null) => (v ? Number(v) : undefined);
 
 export default function Fleet() {
-  useMeta("Avtopark – icarəyə avtomobillər", "AFN rent a car avtoparkı, Bakı: ekonom, biznes, premium, krossover/SUV və avtobuslar. Klass, gündəlik qiymət, yer sayı, sürətlər qutusu və tarixə görə filtr.");
+  usePageMeta(PAGE_META.park);
   const [params, setParams] = useSearchParams();
   const [cars, setCars] = useState<Car[] | null>(null);
   const [error, setError] = useState("");

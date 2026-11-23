@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { EXTRAS, addDays, asset, azn, prettyDay, todayInBaku } from "../lib/shared";
-import { useApp, useMeta } from "../lib/store";
+import { useApp, usePageMeta } from "../lib/store";
+import { PAGE_META } from "../lib/routeMeta";
 import { ApiError, type Booking, type Car, type Location, type Quote } from "../lib/types";
 
 type Errors = Record<string, string>;
 
 export default function BookingPage() {
-  useMeta("Onlayn rezervasiya", "Bakıda onlayn avtomobil rezervasiyası: avtomobili, tarixləri, götürmə yerini (ofis, hava limanı, ünvan) və əlavələri seçin – qiymət dərhal hesablanır.");
+  usePageMeta(PAGE_META.rezervasiya);
   const [params] = useSearchParams();
   const { session, draft, setDraft, toggleExtra } = useApp();
   const [cars, setCars] = useState<Car[]>([]);

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { STATUS_LABEL, azn, prettyDay, todayInBaku } from "../lib/shared";
-import { useApp, useMeta } from "../lib/store";
+import { useApp, usePageMeta } from "../lib/store";
+import { PAGE_META } from "../lib/routeMeta";
 import { ApiError, canAdmin, type Booking } from "../lib/types";
 
 export const StatusBadge = ({ s }: { s: string }) => {
@@ -16,7 +17,7 @@ export const StatusBadge = ({ s }: { s: string }) => {
 };
 
 export default function MyBookings() {
-  useMeta("Rezervasiyalarım", undefined, { noindex: true });
+  usePageMeta(PAGE_META.hesab);
   const { session, setSession, say } = useApp();
   const [list, setList] = useState<Booking[] | null>(null);
   const [error, setError] = useState("");
