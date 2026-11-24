@@ -143,10 +143,11 @@
   .skip-link:focus {
     left: 8px;
   }
+  /* bottom of the screen: at the top it covered the sticky header and the admin nav after a demo sign-in */
   .afn-toast {
     position: fixed;
     left: 50%;
-    top: 18px;
+    bottom: max(18px, env(safe-area-inset-bottom));
     z-index: 90;
     max-width: calc(100vw - 32px);
     padding: 10px 16px;
@@ -156,7 +157,7 @@
     font-size: 0.9rem;
     font-weight: 500;
     opacity: 0;
-    transform: translate(-50%, -12px);
+    transform: translate(-50%, 12px);
     transition: opacity 0.3s, transform 0.4s cubic-bezier(0.2, 1.4, 0.4, 1);
     pointer-events: none;
   }

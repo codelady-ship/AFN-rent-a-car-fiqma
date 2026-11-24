@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { Navigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { CATEGORIES, STATUS_LABEL, TRANSITIONS, azn, prettyDay } from "../lib/shared";
-import { useApp, useMeta } from "../lib/store";
+import { useApp, usePageMeta } from "../lib/store";
+import { PAGE_META } from "../lib/routeMeta";
 import { demo as sandbox } from "../lib/demo";
 import { ApiError, canAdmin, type Booking, type Car, type Message, type Stats } from "../lib/types";
 import { StatusBadge } from "./MyBookings";
@@ -91,7 +92,7 @@ function ConfirmDelete({ what, onConfirm }: { what: string; onConfirm: () => voi
 }
 
 export default function Admin() {
-  useMeta("Admin panel", undefined, { noindex: true });
+  usePageMeta(PAGE_META.admin);
   const { session, setSession, say, demo } = useApp();
   const [tab, setTab] = useState<Tab>("panel");
   const [stats, setStats] = useState<Stats | null>(null);

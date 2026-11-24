@@ -2,7 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { EXTRAS, asset, prettyDay } from "../lib/shared";
-import { useApp, useMeta } from "../lib/store";
+import { useApp, usePageMeta } from "../lib/store";
+import { carMeta } from "../lib/routeMeta";
 import { ApiError, type Car, type Review } from "../lib/types";
 
 const Stars = ({ n }: { n: number }) => (
@@ -24,7 +25,7 @@ export default function CarDetail() {
   const [comment, setComment] = useState("");
   const [reviewMsg, setReviewMsg] = useState("");
 
-  useMeta(car ? `${car.model} icarəsi – ${car.pricePerDay} AZN/gün` : "Avtomobil", car ? `${car.model} (${car.year}) icarəsi Bakıda: ${car.seats} yer, ${car.transmission}, ${car.fuelType}. Gündəlik ${car.pricePerDay} AZN, onlayn rezervasiya, hava limanına və ünvana çatdırılma – AFN rent a car.` : undefined);
+  usePageMeta(car ? carMeta(car) : { title: "Avtomobil" });
 
   useEffect(() => {
     let live = true;

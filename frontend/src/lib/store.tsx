@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { isDemo, onModeChange } from "./api";
+import { fullTitle, type PageMeta } from "./routeMeta";
 import type { Session } from "./types";
 
 /* ---------- small localStorage helpers (never throw: private mode, blocked storage) ---------- */
@@ -107,7 +108,7 @@ function setMeta(attr: "name" | "property", key: string, content: string) {
  */
 export function useMeta(title: string, description?: string, { noindex = false }: { noindex?: boolean } = {}) {
   useEffect(() => {
-    document.title = title.includes("AFN") ? title : `${title} | AFN rent a car`;
+    document.title = fullTitle(title);
     const site = (import.meta.env.VITE_SITE_URL || location.origin).replace(/\/$/, "");
     const path = location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/";
     const url = site + path;
@@ -123,3 +124,6 @@ export function useMeta(title: string, description?: string, { noindex = false }
     setMeta("name", "robots", noindex ? "noindex, follow" : "index, follow, max-image-preview:large");
   }, [title, description, noindex]);
 }
+
+/** useMeta with a PAGE_META entry or a carMeta() result: the same text the build writes into the prerendered pages. */
+export const usePageMeta = (m: PageMeta) => useMeta(m.title, m.description, { noindex: m.noindex });

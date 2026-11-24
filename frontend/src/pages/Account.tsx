@@ -2,11 +2,12 @@ import { useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { DEMO_ADMIN } from "../lib/demo";
-import { useApp, useMeta } from "../lib/store";
+import { useApp, usePageMeta } from "../lib/store";
+import { PAGE_META } from "../lib/routeMeta";
 import { ApiError, canAdmin } from "../lib/types";
 
 export default function Account() {
-  useMeta("Daxil ol və ya qeydiyyat", "AFN rent a car hesabı: rezervasiyalarınızı izləyin və ləğv edin.", { noindex: true });
+  usePageMeta(PAGE_META["daxil-ol"]);
   const [params] = useSearchParams();
   const nav = useNavigate();
   const { setSession, demo, say } = useApp();
@@ -105,7 +106,7 @@ export default function Account() {
           </button>
           <p className="m-0 text-sm text-muted">
             Portfolio üçün açıq demo hesab: <span translate="no">{DEMO_ADMIN.email}</span> / <span translate="no">{DEMO_ADMIN.password}</span>.{" "}
-            {demo ? "API qoşulmayıb: admin paneli brauzerdəki demo məlumatla işləyir." : "Yalnız baxış: dəyişikliklər saxlanılmır, müştəri məlumatları gizlədilir."}
+            {demo ? "Oflayn demo: admin paneli brauzerdəki nümunə məlumatla işləyir." : "Yalnız baxış: dəyişikliklər saxlanılmır, müştəri məlumatları gizlədilir."}
           </p>
         </div>
       )}

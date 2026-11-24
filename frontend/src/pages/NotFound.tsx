@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { useMeta } from "../lib/store";
+import { usePageMeta } from "../lib/store";
+import { PAGE_META } from "../lib/routeMeta";
 
 export default function NotFound() {
-  useMeta("Səhifə tapılmadı", undefined, { noindex: true });
+  usePageMeta(PAGE_META.notFound);
   return (
     <div className="mx-auto max-w-xl px-4 py-20 text-center">
       <h1 className="text-3xl font-bold">Səhifə tapılmadı</h1>

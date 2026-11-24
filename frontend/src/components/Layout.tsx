@@ -10,7 +10,7 @@ export function DemoBanner() {
   if (!demo) return null;
   return (
     <p className="bg-paper px-4 py-2 text-center text-sm text-muted">
-      <strong className="text-ink">Demo rejim:</strong> API qoşulmayıb, avtomobillər nümunə məlumatdır və rezervasiyalar yalnız bu brauzerdə saxlanılır.
+      <strong className="text-ink">Oflayn demo:</strong> avtomobillər nümunə məlumatdır və rezervasiyalar yalnız bu brauzerdə saxlanılır.
     </p>
   );
 }

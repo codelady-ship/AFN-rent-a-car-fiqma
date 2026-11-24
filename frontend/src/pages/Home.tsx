@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import AfnStory from "../landing/AfnStory";
 import { FAQ } from "../landing/faq";
-import { useMeta } from "../lib/store";
+import { usePageMeta } from "../lib/store";
+import { PAGE_META } from "../lib/routeMeta";
 
 export default function Home() {
-  useMeta("AFN rent a car – Bakıda avtomobil icarəsi", "AFN rent a car: Bakıda ekonom, biznes, premium, SUV və avtobus icarəsi. Onlayn rezervasiya, şəffaf qiymət, hava limanına və ünvana çatdırılma.");
+  usePageMeta(PAGE_META.home);
   // FAQPage structured data: the same questions and answers that are visible on the page
   const faqLd = useMemo(
     () =>

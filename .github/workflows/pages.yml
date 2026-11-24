@@ -36,11 +36,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      # SPA routes: GitHub Pages serves 404.html for unknown paths
-      - run: cp dist/index.html dist/404.html
-      # these routes answer 200 instead of the 404 fallback (Pages serves /park from park.html);
-      # /admin and /daxil-ol are the portfolio's admin demo links (Pages sends no X-Frame-Options, so they can be framed)
-      - run: for r in park rezervasiya elaqe admin daxil-ol; do cp dist/index.html "dist/$r.html"; done
+      # npm run build also writes 404.html and a copy of index.html per route (park.html, park/demo-1.html, admin.html,
+      # ...) with that route's meta tags, so deep links answer 200 (see prerenderRoutes in frontend/vite.config.ts).
+      # /admin and /daxil-ol are the portfolio's admin demo links (Pages sends no X-Frame-Options, so they can be framed).
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
